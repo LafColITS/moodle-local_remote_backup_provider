@@ -7,6 +7,6 @@ $functions = array(
 	 'classpath' => 'local/remote_backup_provider/externallib.php',
 	 'description' => 'Generate a course backup file and return a link.',
 	 'type' => 'read',
-	 'capabilities' => '',
+	 'capabilities' => 'moodle/backup:backupcourse',
     ),
 );
