@@ -3,6 +3,52 @@
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 class local_remote_backup_provider_external extends external_api {
+    public static function find_courses_parameters() {
+        return new external_function_parameters(
+            array(
+                'search' => new external_value(PARAM_CLEAN, 'search'),
+            )
+        );
+    }
+
+    public static function find_courses($search) {
+        global $DB;
+
+        // Validate parameters passed from web service.
+        $params = self::validate_parameters(self::find_courses_parameters(), array('search' => $search));
+
+        // Build query.
+        $searchsql    = '';
+        $searchparams = array();
+        $searchlikes = array();
+        $searchfields = array('c.shortname', 'c.fullname', 'c.idnumber');
+        for($i=0; $i<count($searchfields); $i++) {
+            $searchlikes[$i] = $DB->sql_like($searchfields[$i], ":s{$i}", false, false);
+            $searchparams["s{$i}"] = '%' . $search . '%';
+        }
+        $searchsql = implode(' OR ', $searchlikes);
+
+        // Run query.
+        $fields = 'c.id,c.idnumber,c.shortname,c.fullname';
+        $sql = "SELECT $fields FROM {course} c WHERE $searchsql ORDER BY c.shortname ASC";
+        error_log($sql);
+        $courses = $DB->get_records_sql($sql, $searchparams, 0);
+        return $courses;
+    }
+
+    public static function find_courses_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id'        => new external_value(PARAM_INT, 'id of course'),
+                    'idnumber'  => new external_value(PARAM_RAW, 'idnumber of course'),
+                    'shortname' => new external_value(PARAM_RAW, 'short name of course'),
+                    'fullname'  => new external_value(PARAM_RAW, 'long name of course'),
+                )
+            )
+        );
+    }
+
     public static function get_course_backup_by_id_parameters() {
         return new external_function_parameters(
 	    array(
