@@ -29,7 +29,7 @@ function local_remote_backup_provider_pluginfile($course, $cm, $context, $filear
     require_login($course, true);
 
     // Capability check.
-    if(!has_capability('moodle/backup:backupcourse', $context)) {
+    if (!has_capability('moodle/backup:backupcourse', $context)) {
         return false;
     }
 
@@ -45,7 +45,7 @@ function local_remote_backup_provider_pluginfile($course, $cm, $context, $filear
     // Retrieve the file.
     $fs = get_file_storage();
     $file = $fs->get_file($context->id, 'local_remote_backup_provider', $filearea, $itemid, $filepath, $filename);
-    if(!$file) {
+    if (!$file) {
         return false;
     }
     send_stored_file($file, 0, 0, $forcedownload, $options);
@@ -59,10 +59,17 @@ function local_remote_backup_provider_cron() {
     $records = $DB->get_records('files', array('component' => 'local_remote_backup_provider', 'filearea' => 'backup'));
     $fs = get_file_storage();
 
-    foreach($records as $record) {
-        if($record->timemodified < (time() - DAYSECS) && ($record->filepath != '.')) {
-            $file = $fs->get_file($record->contextid, $record->component, $record->filearea, $record->itemid, $record->filepath, $record->filename);
-            if($file) {
+    foreach ($records as $record) {
+        if ($record->timemodified < (time() - DAYSECS) && ($record->filepath != '.')) {
+            $file = $fs->get_file(
+                $record->contextid,
+                $record->component,
+                $record->filearea,
+                $record->itemid,
+                $record->filepath,
+                $record->filename
+            );
+            if ($file) {
                 $file->delete();
                 mtrace('Deleted ' . $record->pathnamehash);
             }

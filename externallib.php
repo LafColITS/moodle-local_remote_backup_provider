@@ -41,7 +41,7 @@ class local_remote_backup_provider_external extends external_api {
         $searchparams = array();
         $searchlikes = array();
         $searchfields = array('c.shortname', 'c.fullname', 'c.idnumber');
-        for($i=0; $i<count($searchfields); $i++) {
+        for ($i = 0; $i < count($searchfields); $i++) {
             $searchlikes[$i] = $DB->sql_like($searchfields[$i], ":s{$i}", false, false);
             $searchparams["s{$i}"] = '%' . $search . '%';
         }
@@ -83,7 +83,8 @@ class local_remote_backup_provider_external extends external_api {
         $userid = $DB->get_field('user', 'id', array('username' => $username));
 
         // Instantiate controller.
-        $bc = new backup_controller(\backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
+        $bc = new backup_controller(
+            \backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
 
         // Set some reasonable defaults.
         $tasks = $bc->get_plan()->get_tasks();
@@ -113,19 +114,35 @@ class local_remote_backup_provider_external extends external_api {
         $bc->execute_plan();
         $result = $bc->get_results();
 
-        if(isset($result['backup_destination']) && $result['backup_destination']) {
+        if (isset($result['backup_destination']) && $result['backup_destination']) {
             $file = $result['backup_destination'];
             $context = context_course::instance($id);
             $fs = get_file_storage();
             $timestamp = time();
 
-            $file_record = array('contextid' => $context->id, 'component' => 'local_remote_backup_provider', 'filearea' => 'backup', 'itemid' => $timestamp, 'filepath' => '/', 'filename' => 'foo', 'timecreated' => $timestamp, 'timemodified' => $timestamp);
-            $stored_file = $fs->create_file_from_storedfile($file_record, $file);
+            $filerecord = array(
+                'contextid' => $context->id,
+                'component' => 'local_remote_backup_provider',
+                'filearea' => 'backup',
+                'itemid' => $timestamp,
+                'filepath' => '/',
+                'filename' => 'foo',
+                'timecreated' => $timestamp,
+                'timemodified' => $timestamp
+            );
+            $storedfile = $fs->create_file_from_storedfile($filerecord, $file);
             $file->delete();
 
             // Make the link.
-            $filepath = $stored_file->get_filepath().$stored_file->get_filename();
-            $fileurl = moodle_url::make_webservice_pluginfile_url($stored_file->get_contextid(), $stored_file->get_component(), $stored_file->get_filearea(), $stored_file->get_itemid(), $stored_file->get_filepath(), $stored_file->get_filename());
+            $filepath = $storedfile->get_filepath() . $storedfile->get_filename();
+            $fileurl = moodle_url::make_webservice_pluginfile_url(
+                $storedfile->get_contextid(),
+                $storedfile->get_component(),
+                $storedfile->get_filearea(),
+                $storedfile->get_itemid(),
+                $storedfile->get_filepath(),
+                $storedfile->get_filename()
+            );
             return array('url' => $fileurl->out(true));
         } else {
             return false;
