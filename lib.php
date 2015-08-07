@@ -1,7 +1,7 @@
 <?php
 function local_remote_backup_provider_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     // Check that the filearea is sane.
-    if ($filearea !== 'local_remote_backup_provider') {
+    if ($filearea !== 'backup') {
         return false;
     }
 
