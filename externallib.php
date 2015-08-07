@@ -31,7 +31,6 @@ class local_remote_backup_provider_external extends external_api {
         // Run query.
         $fields = 'c.id,c.idnumber,c.shortname,c.fullname';
         $sql = "SELECT $fields FROM {course} c WHERE $searchsql ORDER BY c.shortname ASC";
-        error_log($sql);
         $courses = $DB->get_records_sql($sql, $searchparams, 0);
         return $courses;
     }
