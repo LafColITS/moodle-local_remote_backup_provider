@@ -63,8 +63,33 @@ class local_remote_backup_provider_external extends external_api {
         // Extract the userid from the username.
         $userid = $DB->get_field('user', 'id', array('username' => $username));
 
+        // Instantiate controller.
         $bc = new backup_controller(\backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
 
+        // Set some reasonable defaults.
+        $tasks = $bc->get_plan()->get_tasks();
+        foreach ($tasks as &$task) {
+            if ($task instanceof \backup_root_task) {
+                $setting = $task->get_setting('users');
+                $setting->set_value('0');
+                $setting = $task->get_setting('anonymize');
+                $setting->set_value('1');
+                $setting = $task->get_setting('role_assignments');
+                $setting->set_value('0');
+                $setting = $task->get_setting('filters');
+                $setting->set_value('0');
+                $setting = $task->get_setting('comments');
+                $setting->set_value('0');
+                $setting = $task->get_setting('logs');
+                $setting->set_value('0');
+                $setting = $task->get_setting('grade_histories');
+                $setting->set_value('0');
+                $setting = $task->get_setting('blocks');
+                $setting->set_value('0');
+            }
+        }
+
+        // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);
         $bc->execute_plan();
         $result = $bc->get_results();
