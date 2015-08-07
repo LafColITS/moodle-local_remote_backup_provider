@@ -1,4 +1,5 @@
 <?php
 
 $plugin->component = 'local_remote_backup_provider';
-$plugin->version   = '2015080501';
+$plugin->cron      = '5';
+$plugin->version   = '2015080600';
