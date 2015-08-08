@@ -24,7 +24,7 @@ function local_remote_backup_provider_extend_navigation_course($navigation, $cou
         $url = new moodle_url('/local/remote_backup_provider/index.php', array('id' => $course->id));
         $navigation->add(get_string('import', 'local_remote_backup_provider'), $url,
                 navigation_node::TYPE_SETTING, null, null, new pix_icon('i/import', ''));
-    }   
+    }
 }
 
 function local_remote_backup_provider_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {

@@ -38,7 +38,7 @@ class local_remote_backup_provider_external extends external_api {
         $params = self::validate_parameters(self::find_courses_parameters(), array('search' => $search));
 
         // Capability check.
-        if(!has_capability('moodle/course:viewhiddencourses', context_system::instance())) {
+        if (!has_capability('moodle/course:viewhiddencourses', context_system::instance())) {
             return false;
         }
 
@@ -87,7 +87,9 @@ class local_remote_backup_provider_external extends external_api {
         global $CFG, $DB;
 
         // Validate parameters passed from web service.
-        $params = self::validate_parameters(self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username));
+        $params = self::validate_parameters(
+            self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username)
+        );
 
         // Extract the userid from the username.
         $userid = $DB->get_field('user', 'id', array('username' => $username));
