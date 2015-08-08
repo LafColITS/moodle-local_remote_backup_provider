@@ -19,10 +19,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['import'] = 'Import from remote';
-$string['pluginname'] = 'Remote backup provider';
-$string['pluginnotconfigured'] = 'The plugin is not configured';
-$string['remotesite'] = 'Remote site';
-$string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
-$string['wstoken'] = 'Web service token';
-$string['wstoken_desc'] = 'Add the web service token from the remote site.';
+if ($hassiteconfig) {
+    $settings = new admin_settingpage('local_remote_backup_provider', get_string('pluginname', 'local_remote_backup_provider'));
+    $ADMIN->add('localplugins', $settings);
+
+    $adminsetting = new admin_setting_configtext('remotesite', get_string('remotesite', 'local_remote_backup_provider'),
+        get_string('remotesite_desc', 'local_remote_backup_provider'), '');
+    $adminsetting->plugin = 'local_remote_backup_provider';
+    $settings->add($adminsetting);
+
+    $adminsetting = new admin_setting_configtext('wstoken', get_string('wstoken', 'local_remote_backup_provider'),
+        get_string('wstoken_desc', 'local_remote_backup_provider'), '');
+    $adminsetting->plugin = 'local_remote_backup_provider';
+    $settings->add($adminsetting);
+}

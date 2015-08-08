@@ -19,10 +19,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['import'] = 'Import from remote';
-$string['pluginname'] = 'Remote backup provider';
-$string['pluginnotconfigured'] = 'The plugin is not configured';
-$string['remotesite'] = 'Remote site';
-$string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
-$string['wstoken'] = 'Web service token';
-$string['wstoken_desc'] = 'Add the web service token from the remote site.';
+$capabilities = array(
+
+    'local/remote_backup_provider:access' => array(
+        'riskbitmask' => RISK_CONFIG | RISK_SPAM | RISK_PERSONAL | RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        ),
+    )
+);

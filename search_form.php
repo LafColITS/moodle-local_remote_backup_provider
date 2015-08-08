@@ -19,10 +19,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['import'] = 'Import from remote';
-$string['pluginname'] = 'Remote backup provider';
-$string['pluginnotconfigured'] = 'The plugin is not configured';
-$string['remotesite'] = 'Remote site';
-$string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
-$string['wstoken'] = 'Web service token';
-$string['wstoken_desc'] = 'Add the web service token from the remote site.';
+require_once("$CFG->libdir/formslib.php");
+
+class local_remote_backup_provider_search_form extends moodleform {
+    public function definition() {
+        global $CFG;
+
+        $mform = $this->_form;
+        $mform->addElement('text', 'search', get_string('search'));
+        $mform->setType('search', PARAM_NOTAGS);
+        $mform->addRule('search', '', 'minlength', 4);
+        $mform->addElement('hidden', 'id', $this->_customdata['id']);
+        $mform->setType('id', PARAM_INT);
+        $this->add_action_buttons(false, get_string('search'));
+    }
+}
