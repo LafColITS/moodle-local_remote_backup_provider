@@ -21,4 +21,5 @@
 
 $plugin->component = 'local_remote_backup_provider';
 $plugin->cron      = '300';
-$plugin->version   = '2015080600';
+$plugin->maturity  = MATURITY_ALPHA;
+$plugin->version   = '2015080800';
