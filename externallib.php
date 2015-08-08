@@ -19,6 +19,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once($CFG->dirroot . '/lib/externallib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 class local_remote_backup_provider_external extends external_api {
@@ -36,6 +37,11 @@ class local_remote_backup_provider_external extends external_api {
         // Validate parameters passed from web service.
         $params = self::validate_parameters(self::find_courses_parameters(), array('search' => $search));
 
+        // Capability check.
+        if(!has_capability('moodle/course:viewhiddencourses', context_system::instance())) {
+            return false;
+        }
+
         // Build query.
         $searchsql    = '';
         $searchparams = array();
@@ -45,7 +51,8 @@ class local_remote_backup_provider_external extends external_api {
             $searchlikes[$i] = $DB->sql_like($searchfields[$i], ":s{$i}", false, false);
             $searchparams["s{$i}"] = '%' . $search . '%';
         }
-        $searchsql = implode(' OR ', $searchlikes);
+        // We exclude the front page.
+        $searchsql = '(' . implode(' OR ', $searchlikes) . ') AND c.id != 1';
 
         // Run query.
         $fields = 'c.id,c.idnumber,c.shortname,c.fullname';
@@ -79,35 +86,15 @@ class local_remote_backup_provider_external extends external_api {
     public static function get_course_backup_by_id($id, $username) {
         global $CFG, $DB;
 
+        // Validate parameters passed from web service.
+        $params = self::validate_parameters(self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username));
+
         // Extract the userid from the username.
         $userid = $DB->get_field('user', 'id', array('username' => $username));
 
         // Instantiate controller.
         $bc = new backup_controller(
             \backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
-
-        // Set some reasonable defaults.
-        $tasks = $bc->get_plan()->get_tasks();
-        foreach ($tasks as &$task) {
-            if ($task instanceof \backup_root_task) {
-                $setting = $task->get_setting('users');
-                $setting->set_value('0');
-                $setting = $task->get_setting('anonymize');
-                $setting->set_value('1');
-                $setting = $task->get_setting('role_assignments');
-                $setting->set_value('0');
-                $setting = $task->get_setting('filters');
-                $setting->set_value('0');
-                $setting = $task->get_setting('comments');
-                $setting->set_value('0');
-                $setting = $task->get_setting('logs');
-                $setting->set_value('0');
-                $setting = $task->get_setting('grade_histories');
-                $setting->set_value('0');
-                $setting = $task->get_setting('blocks');
-                $setting->set_value('0');
-            }
-        }
 
         // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);
