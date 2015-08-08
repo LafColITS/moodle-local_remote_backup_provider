@@ -33,7 +33,7 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
 
         $role = new stdClass();
         $role->name = 'Web service user';
-        $r1 = $this->getDataGenerator()->create_role($role);
+        $r1 = $this->create_role($role);
 
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($r1, $user->id);
@@ -59,7 +59,7 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
 
         $role = new stdClass();
         $role->name = 'Web service user';
-        $r1 = $this->getDataGenerator()->create_role($role);
+        $r1 = $this->create_role($role); // Manually backported to this module.
 
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($r1, $user->id);
@@ -74,5 +74,80 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
 
         $result = local_remote_backup_provider_external::get_course_backup_by_id($c1->id, $user->username);
         $this->assertNotEmpty($result);
+        set_time_limit(0);
+    }
+
+   /**
+     * Creates a new role in the system.
+     *
+     * You can fill $record with the role 'name',
+     * 'shortname', 'description' and 'archetype'.
+     *
+     * If an archetype is specified it's capabilities,
+     * context where the role can be assigned and
+     * all other properties are copied from the archetype;
+     * if no archetype is specified it will create an
+     * empty role.
+     *
+     * @param array|stdClass $record
+     * @return int The new role id
+     */
+    public function create_role($record=null) {
+        global $DB;
+        $i = 99;
+        $record = (array)$record;
+        if (empty($record['shortname'])) {
+            $record['shortname'] = 'role-' . $i;
+        }
+        if (empty($record['name'])) {
+            $record['name'] = 'Test role ' . $i;
+        }
+        if (empty($record['description'])) {
+            $record['description'] = 'Test role ' . $i . ' description';
+        }
+        if (empty($record['archetype'])) {
+            $record['archetype'] = '';
+        } else {
+            $archetypes = get_role_archetypes();
+            if (empty($archetypes[$record['archetype']])) {
+                throw new coding_exception('\'role\' requires the field \'archetype\' to specify a ' .
+                    'valid archetype shortname (editingteacher, student...)');
+            }
+        }
+        // Creates the role.
+        if (!$newroleid = create_role($record['name'], $record['shortname'], $record['description'], $record['archetype'])) {
+            throw new coding_exception('There was an error creating \'' . $record['shortname'] . '\' role');
+        }
+        // If no archetype was specified we allow it to be added to all contexts,
+        // otherwise we allow it in the archetype contexts.
+        if (!$record['archetype']) {
+            $contextlevels = array_keys(context_helper::get_all_levels());
+        } else {
+            // Copying from the archetype default rol.
+            $archetyperoleid = $DB->get_field(
+                'role',
+                'id',
+                array('shortname' => $record['archetype'], 'archetype' => $record['archetype'])
+            );
+            $contextlevels = get_role_contextlevels($archetyperoleid);
+        }
+        set_role_contextlevels($newroleid, $contextlevels);
+        if ($record['archetype']) {
+            // We copy all the roles the archetype can assign, override and switch to.
+            if ($record['archetype']) {
+                $types = array('assign', 'override', 'switch');
+                foreach ($types as $type) {
+                    $rolestocopy = get_default_role_archetype_allows($type, $record['archetype']);
+                    foreach ($rolestocopy as $tocopy) {
+                        $functionname = 'allow_' . $type;
+                        $functionname($newroleid, $tocopy);
+                    }
+                }
+            }
+            // Copying the archetype capabilities.
+            $sourcerole = $DB->get_record('role', array('id' => $archetyperoleid));
+            role_cap_duplicate($sourcerole, $newroleid);
+        }
+        return $newroleid;
     }
 }
