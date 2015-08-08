@@ -22,4 +22,6 @@
 $plugin->component = 'local_remote_backup_provider';
 $plugin->cron      = '300';
 $plugin->maturity  = MATURITY_ALPHA;
+$plugin->release   = 'Alpha for 2.5-2.6';
+$plugin->requires  = '2013051400';
 $plugin->version   = '2015080800';
