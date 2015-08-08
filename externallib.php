@@ -124,7 +124,7 @@ class local_remote_backup_provider_external extends external_api {
 
             // Make the link.
             $filepath = $storedfile->get_filepath() . $storedfile->get_filename();
-            $fileurl = moodle_url::make_webservice_pluginfile_url(
+            $fileurl = moodle_url::make_pluginfile_url(
                 $storedfile->get_contextid(),
                 $storedfile->get_component(),
                 $storedfile->get_filearea(),
@@ -132,7 +132,8 @@ class local_remote_backup_provider_external extends external_api {
                 $storedfile->get_filepath(),
                 $storedfile->get_filename()
             );
-            return array('url' => $fileurl->out(true));
+            $fileurl = str_replace('pluginfile.php', 'webservice/pluginfile.php', $fileurl);
+            return array('url' => $fileurl);
         } else {
             return false;
         }
