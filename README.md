@@ -28,6 +28,16 @@ The web service will need the following functions:
 
 On the target Moodle instance you will need to configure the token and source Moodle URL in the System Administration block under Local Plugins > Remote Backup Provider.
 
+Usage
+-----
+On the target instance you will have a new link in the Course Administration block called "Import from remote". This will bring up a page with a search interface which queries the source instance for a list of matching courses. Clicking the link begins the following process, all of which happens automatically:
+
+1. A backup will be created on the source instance.
+2. The backup will be copied into the target instance.
+3. You will be redirected to the course restore dialog with the backup preloaded.
+
+At this point follow the course restore process. The backup is created according to the general defaults on the source instance. Cron is configured to delete the backup files on *both* environments after 24 hours.
+
 Requirements
 ------------
 - Moodle 2.7 (build 2014051200 or later)
