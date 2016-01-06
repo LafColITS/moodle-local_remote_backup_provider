@@ -1,6 +1,8 @@
 Moodle Remote Backup Provider
 =============================
 
+[![Build Status](https://api.travis-ci.org/mackensen/moodle-local_remote_backup_provider.png)](https://api.travis-ci.org/mackensen/moodle-local_remote_backup_provider)
+
 This local module allows you to restore a course from a remote Moodle instance into your current instance via a REST web service. The intended use case is quick restores from an archival Moodle instance into the current yearly instance.
 
 It is limited to administrators but could in the future be extended for teacher use. Currently it is limited to one pair of source and target instances.
