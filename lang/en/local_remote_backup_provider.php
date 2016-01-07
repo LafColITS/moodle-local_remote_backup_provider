@@ -23,6 +23,7 @@ $string['import'] = 'Import from remote';
 $string['pluginname'] = 'Remote backup provider';
 $string['pluginnotconfigured'] = 'The plugin is not configured';
 $string['privacy:metadata'] = 'The Remote backup provider plugin does not store any personal data.';
+$string['remote_backup_provider:access'] = 'Access the remote backup provider interface';
 $string['remotesite'] = 'Remote site';
 $string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
 $string['wstoken'] = 'Web service token';
