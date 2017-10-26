@@ -19,6 +19,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $functions = array(
     'local_remote_backup_provider_find_courses' => array(
          'classname' => 'local_remote_backup_provider_external',
