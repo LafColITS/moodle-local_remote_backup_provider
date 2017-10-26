@@ -19,6 +19,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 function local_remote_backup_provider_extend_navigation_course($navigation, $course, $context) {
     if (has_capability('local/remote_backup_provider:access', $context)) {
         $url = new moodle_url('/local/remote_backup_provider/index.php', array('id' => $course->id));

@@ -19,6 +19,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $plugin->component = 'local_remote_backup_provider';
 $plugin->cron      = 300;
 $plugin->maturity  = MATURITY_ALPHA;
