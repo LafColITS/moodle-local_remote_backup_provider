@@ -1,5 +1,7 @@
 language: php
 
+sudo: false
+
 cache:
   directories:
     - $HOME/.composer/cache
@@ -26,7 +28,8 @@ env:
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install node
+  - nvm install 8.9
+  - nvm use 8.9
   - cd ../..
   - composer selfupdate
   - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
