@@ -23,7 +23,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_remote_backup_provider';
 $plugin->cron      = 300;
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = 'Alpha for 2.8+';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->release   = 'v3.4.0';
 $plugin->requires  = 2017111300;
-$plugin->version   = 2015080800;
+$plugin->version   = 2018051300;

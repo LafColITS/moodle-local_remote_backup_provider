@@ -7,8 +7,6 @@ This local module allows you to restore a course from a remote Moodle instance i
 
 It is limited to administrators but could in the future be extended for teacher use. Currently it is limited to one pair of source and target instances.
 
-This is **alpha** code at present. It has been tested in a virtual environment but further testing is needed. Please report back all issues to [Github](https://github.com/mackensen/moodle-local_remote_backup_provider/issues).
-
 Configuration
 -------------
 You will need to install this plugin on both the source and target instances. On the source Moodle instance you'll need to create the following:
@@ -42,9 +40,9 @@ At this point follow the course restore process. The backup is created according
 
 Requirements
 ------------
-- Moodle 3.2 (build 2016120500 or later)
+- Moodle 3.4 (build 2017111300 or later)
 
-See branches for versions prior to Moodle 3.2.
+See branches for versions prior to Moodle 3.4.
 
 Installation
 ------------
