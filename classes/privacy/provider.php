@@ -13,17 +13,30 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * @package    local_remote_backup_provider
- * @copyright  2015 Lafayette College ITS
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Privacy implementation for local_remote_backup_provider.
+ *
+ * @package   local_course_template
+ * @copyright 2018 Lafayette College ITS
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['import'] = 'Import from remote';
-$string['pluginname'] = 'Remote backup provider';
-$string['pluginnotconfigured'] = 'The plugin is not configured';
-$string['privacy:metadata'] = 'The Remote backup provider plugin does not store any personal data.';
-$string['remotesite'] = 'Remote site';
-$string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
-$string['wstoken'] = 'Web service token';
-$string['wstoken_desc'] = 'Add the web service token from the remote site.';
+namespace local_remote_backup_provider\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+class provider implements
+    // This plugin does not store any personal user data.
+    \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() {
+        return 'privacy:metadata';
+    }
+}
