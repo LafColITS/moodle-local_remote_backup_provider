@@ -25,13 +25,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 $tasks = array(
-  array(
-      'classname' => 'local_remote_backup_provider\task\remove_old',
-      'blocking' => 0,
-      'minute' => '*/5',
-      'hour' => '*',
-      'day' => '*',
-      'dayofweek' => '*',
-      'month' => '*',
-  ),
+    array(
+        'classname' => 'local_remote_backup_provider\task\remove_old',
+        'blocking' => 0,
+        'minute' => '*/5',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ),
 );

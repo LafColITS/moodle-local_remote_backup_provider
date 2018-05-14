@@ -29,34 +29,34 @@ defined('MOODLE_INTERNAL') || die();
  */
 class remove_old extends \core\task\scheduled_task {
 
-  public function get_name() {
-    return get_string('remove_old_task', 'local_remote_backup_provider');
-  }
+    public function get_name() {
+        return get_string('remove_old_task', 'local_remote_backup_provider');
+    }
 
-  public function execute() {
-    global $DB;
-    mtrace('Deleting old remote backup files');
+    public function execute() {
+        global $DB;
+        mtrace('Deleting old remote backup files');
 
-    // Get component files.
-    $records = $DB->get_records('files', array('component' => 'local_remote_backup_provider', 'filearea' => 'backup'));
-    $fs = get_file_storage();
+        // Get component files.
+        $records = $DB->get_records('files', array('component' => 'local_remote_backup_provider', 'filearea' => 'backup'));
+        $fs = get_file_storage();
 
-    foreach ($records as $record) {
-        if ($record->timemodified < (time() - DAYSECS) && ($record->filepath != '.')) {
-            $file = $fs->get_file(
-                $record->contextid,
-                $record->component,
-                $record->filearea,
-                $record->itemid,
-                $record->filepath,
-                $record->filename
-            );
-            if ($file) {
-                $file->delete();
-                mtrace('Deleted ' . $record->pathnamehash);
+        foreach ($records as $record) {
+            if ($record->timemodified < (time() - DAYSECS) && ($record->filepath != '.')) {
+                $file = $fs->get_file(
+                    $record->contextid,
+                    $record->component,
+                    $record->filearea,
+                    $record->itemid,
+                    $record->filepath,
+                    $record->filename
+                );
+                if ($file) {
+                    $file->delete();
+                    mtrace('Deleted ' . $record->pathnamehash);
+                }
             }
         }
+        return true;
     }
-    return true;
-  }
 }
