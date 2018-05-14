@@ -13,18 +13,25 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Task database definitions.
+ *
  * @package    local_remote_backup_provider
  * @copyright  2015 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['remove_old_task'] = 'Remove old remote backup files';
-$string['import'] = 'Import from remote';
-$string['pluginname'] = 'Remote backup provider';
-$string['pluginnotconfigured'] = 'The plugin is not configured';
-$string['privacy:metadata'] = 'The Remote backup provider plugin does not store any personal data.';
-$string['remotesite'] = 'Remote site';
-$string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
-$string['wstoken'] = 'Web service token';
-$string['wstoken_desc'] = 'Add the web service token from the remote site.';
+defined('MOODLE_INTERNAL') || die();
+
+$tasks = array(
+  array(
+      'classname' => 'local_remote_backup_provider\task\remove_old',
+      'blocking' => 0,
+      'minute' => '*/5',
+      'hour' => '*',
+      'day' => '*',
+      'dayofweek' => '*',
+      'month' => '*',
+  ),
+);
