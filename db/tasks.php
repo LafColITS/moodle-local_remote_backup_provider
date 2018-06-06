@@ -18,7 +18,7 @@
  * Task database definitions.
  *
  * @package    local_remote_backup_provider
- * @copyright  2015 Lafayette College ITS
+ * @copyright  2018 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,9 +28,9 @@ $tasks = array(
     array(
         'classname' => 'local_remote_backup_provider\task\remove_old',
         'blocking' => 0,
-        'minute' => '*/5',
-        'hour' => '*',
-        'day' => '*',
+        'minute' => '0',
+        'hour' => '0',
+        'day' => '*/5',
         'dayofweek' => '*',
         'month' => '*',
     ),

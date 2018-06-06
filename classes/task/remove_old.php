@@ -16,7 +16,7 @@
 
 /**
  * @package    local_remote_backup_provider
- * @copyright  2015 Lafayette College ITS
+ * @copyright  2018 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
