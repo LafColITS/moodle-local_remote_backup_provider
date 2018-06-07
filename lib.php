@@ -60,30 +60,3 @@ function local_remote_backup_provider_pluginfile($course, $cm, $context, $filear
     }
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
-
-function local_remote_backup_provider_cron() {
-    global $DB;
-    mtrace('Deleting old remote backup files');
-
-    // Get component files.
-    $records = $DB->get_records('files', array('component' => 'local_remote_backup_provider', 'filearea' => 'backup'));
-    $fs = get_file_storage();
-
-    foreach ($records as $record) {
-        if ($record->timemodified < (time() - DAYSECS) && ($record->filepath != '.')) {
-            $file = $fs->get_file(
-                $record->contextid,
-                $record->component,
-                $record->filearea,
-                $record->itemid,
-                $record->filepath,
-                $record->filename
-            );
-            if ($file) {
-                $file->delete();
-                mtrace('Deleted ' . $record->pathnamehash);
-            }
-        }
-    }
-    return true;
-}
