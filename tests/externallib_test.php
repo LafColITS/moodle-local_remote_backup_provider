@@ -13,7 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Unit tests for local_remote_backup_provider
+ *
  * @package    local_remote_backup_provider
  * @copyright  2015 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,7 +29,17 @@ global $CFG;
 require_once($CFG->dirroot . '/local/remote_backup_provider/externallib.php');
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 
+/**
+ * Unit tests for local_remote_backup_provider
+ *
+ * @package    local_remote_backup_provider
+ * @copyright  2015 Lafayette College ITS
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_remote_backup_provider_testcase extends externallib_advanced_testcase {
+    /**
+     * Ensure that the find_courses() web service function works.
+     */
     public function test_find_courses() {
         $this->resetAfterTest(true);
         $contextid = context_system::instance()->id;
@@ -53,6 +66,9 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
         $this->assertEquals(2, count($results));
     }
 
+    /**
+     * Ensure that the get_course_backup_by_id() web service function works.
+     */
     public function test_get_course_backup_by_id() {
         $this->resetAfterTest(true);
         $contextid = context_system::instance()->id;

@@ -13,7 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Web service library functions
+ *
  * @package    local_remote_backup_provider
  * @copyright  2015 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,7 +27,19 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/lib/externallib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
+/**
+ * Web service API definition.
+ *
+ * @package local_remote_backup_provider
+ * @copyright 2015 Lafayette College ITS
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_remote_backup_provider_external extends external_api {
+    /**
+     * Parameter description for find_courses().
+     *
+     * @return external_function_parameters
+     */
     public static function find_courses_parameters() {
         return new external_function_parameters(
             array(
@@ -33,6 +48,14 @@ class local_remote_backup_provider_external extends external_api {
         );
     }
 
+    /**
+     * Find courses by text search.
+     *
+     * This function searches the course short name, full name, and idnumber.
+     *
+     * @param string $search The text to search on
+     * @return array All courses found
+     */
     public static function find_courses($search) {
         global $DB;
 
@@ -63,6 +86,11 @@ class local_remote_backup_provider_external extends external_api {
         return $courses;
     }
 
+    /**
+     * Parameter description for find_courses().
+     *
+     * @return external_description
+     */
     public static function find_courses_returns() {
         return new external_multiple_structure(
             new external_single_structure(
@@ -76,6 +104,11 @@ class local_remote_backup_provider_external extends external_api {
         );
     }
 
+    /**
+     * Parameter description for get_course_backup_by_id().
+     *
+     * @return external_function_parameters
+     */
     public static function get_course_backup_by_id_parameters() {
         return new external_function_parameters(
             array(
@@ -85,6 +118,16 @@ class local_remote_backup_provider_external extends external_api {
         );
     }
 
+    /**
+     * Create and retrieve a course backup by course id.
+     *
+     * The user is looked up by username as it is not a given that user ids match
+     * across platforms.
+     *
+     * @param int $id the course id
+     * @param string $username The username
+     * @return array|bool An array containing the url or false on failure
+     */
     public static function get_course_backup_by_id($id, $username) {
         global $CFG, $DB;
 
@@ -140,6 +183,11 @@ class local_remote_backup_provider_external extends external_api {
         }
     }
 
+    /**
+     * Parameter description for get_course_backup_by_id().
+     *
+     * @return external_description
+     */
     public static function get_course_backup_by_id_returns() {
         return new external_single_structure(
             array(
