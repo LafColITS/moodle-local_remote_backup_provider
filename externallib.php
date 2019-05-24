@@ -113,7 +113,6 @@ class local_remote_backup_provider_external extends external_api {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'id'),
-                'username' => new external_value(PARAM_USERNAME, 'username'),
             )
         );
     }
@@ -121,27 +120,20 @@ class local_remote_backup_provider_external extends external_api {
     /**
      * Create and retrieve a course backup by course id.
      *
-     * The user is looked up by username as it is not a given that user ids match
-     * across platforms.
-     *
      * @param int $id the course id
-     * @param string $username The username
      * @return array|bool An array containing the url or false on failure
      */
-    public static function get_course_backup_by_id($id, $username) {
-        global $CFG, $DB;
+    public static function get_course_backup_by_id($id) {
+        global $CFG, $DB, $USER;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-            self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username)
+            self::get_course_backup_by_id_parameters(), array('id' => $id)
         );
-
-        // Extract the userid from the username.
-        $userid = $DB->get_field('user', 'id', array('username' => $username));
 
         // Instantiate controller.
         $bc = new backup_controller(
-            \backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
+            \backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $USER->id);
 
         // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);

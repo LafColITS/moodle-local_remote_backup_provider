@@ -67,7 +67,7 @@ if (!empty($search)) {
     $fs = get_file_storage();
     $url = $remotesite . '/webservice/rest/server.php?wstoken=' . $token .
         '&wsfunction=local_remote_backup_provider_get_course_backup_by_id&moodlewsrestformat=json';
-    $params = array('id' => $remote, 'username' => $USER->username);
+    $params = array('id' => $remote);
     $curl = new curl;
     $resp = json_decode($curl->post($url, $params));
 
