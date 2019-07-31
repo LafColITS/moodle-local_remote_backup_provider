@@ -40,9 +40,7 @@ At this point follow the course restore process. The backup is created according
 
 Requirements
 ------------
-- Moodle 3.4 (build 2017111300 or later)
-
-See branches for versions prior to Moodle 3.4.
+- Moodle 3.5 (build 2018051700 or later)
 
 Installation
 ------------

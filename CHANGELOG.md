@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Dropped Moodle 3.4 support
+
 ## 3.4.0 - 2018-05-13
 
 - Updated for GDPR compliance
