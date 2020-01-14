@@ -3,7 +3,7 @@ Moodle Remote Backup Provider
 
 [![Build Status](https://travis-ci.org/LafColITS/moodle-local_remote_backup_provider.svg?branch=master)](https://travis-ci.org/LafColITS/moodle-local_remote_backup_provider)
 
-[RETIRED] This plugin is no longer maintained and there will be no further releases.
+[SEEKING MAINTAINER] This plugin is no longer maintained and there will be no further releases.
 
 This local module allows you to restore a course from a remote Moodle instance into your current instance via a REST web service. The intended use case is quick restores from an archival Moodle instance into the current yearly instance.
 
