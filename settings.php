@@ -43,8 +43,7 @@ if ($hassiteconfig) {
 
     $options = array();
 
-    foreach($users as $user)
-    {
+    foreach ($users as $user) {
         $fullname = array();
         if ($user->firstname) {
             $fullname[] = $user->firstname;
@@ -54,7 +53,7 @@ if ($hassiteconfig) {
         }
         $context = context_course::instance(1);
         if (has_capability('moodle/backup:backupcourse', $context, $user->id)) {
-            $options[$user->id] = implode(' ',$fullname);
+            $options[$user->id] = implode(' ', $fullname);
         }
     }
 
