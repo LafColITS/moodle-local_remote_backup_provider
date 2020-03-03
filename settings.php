@@ -37,4 +37,30 @@ if ($hassiteconfig) {
         get_string('wstoken_desc', 'local_remote_backup_provider'), '');
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
+
+    global $CFG, $DB;
+    $users = $DB->get_records('user');
+
+    $options = array();
+
+    foreach($users as $user)
+    {
+        $fullname = array();
+        if ($user->firstname) {
+            $fullname[] = $user->firstname;
+        }
+        if ($user->firstname != "") {
+            $fullname[] = $user->lastname;
+        }
+        $context = context_course::instance(1);
+        if (has_capability('moodle/backup:backupcourse', $context, $user->id)) {
+            $options[$user->id] = implode(' ',$fullname);
+        }
+    }
+
+    $adminsetting = new admin_setting_configselect('course_creator', get_string('course_creator', 'local_remote_backup_provider'),
+        get_string('select_course_creator', 'local_remote_backup_provider'), 'none', $options);
+    $adminsetting->plugin = 'local_remote_backup_provider';
+    $settings->add($adminsetting);
+
 }

@@ -31,3 +31,5 @@ $string['remotesite'] = 'Remote site';
 $string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
 $string['wstoken'] = 'Web service token';
 $string['wstoken_desc'] = 'Add the web service token from the remote site.';
+$string['select_course_creator'] = 'Select default course creator.';
+$string['course_creator'] = 'Default course creator';

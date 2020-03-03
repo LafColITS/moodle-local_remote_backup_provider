@@ -136,8 +136,7 @@ class local_remote_backup_provider_external extends external_api {
             self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username)
         );
 
-        // Extract the userid from the username.
-        $userid = $DB->get_field('user', 'id', array('username' => $username));
+        $userid = get_config('local_remote_backup_provider', 'course_creator');
 
         // Instantiate controller.
         $bc = new backup_controller(
