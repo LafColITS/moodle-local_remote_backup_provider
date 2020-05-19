@@ -35,6 +35,18 @@ if ($hassiteconfig) {
 
     $adminsetting = new admin_setting_configtext('wstoken', get_string('wstoken', 'local_remote_backup_provider'),
         get_string('wstoken_desc', 'local_remote_backup_provider'), '');
+    $settings->add($adminsetting);
+
+    $options = ['username' => get_string('username'), 'email' => get_string('email'),
+        '' => get_string('donotcheckuser', 'local_remote_backup_provider')];
+    $adminsetting = new admin_setting_configselect('uniqueid', get_string('uniqueid', 'local_remote_backup_provider'),
+        get_string('uniqueid_desc', 'local_remote_backup_provider'), 'username', $options);
+    $settings->add($adminsetting);
+
+    $adminsetting = new admin_setting_configcheckbox('enableuserprecheck',
+        get_string('enableuserprecheck', 'local_remote_backup_provider'),
+        get_string('enabluserprecheck_desc', 'local_remote_backup_provider'), '0');
+
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
 }
