@@ -24,6 +24,8 @@
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once('search_form.php');
+require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
+require_once("{$CFG->dirroot}/backup/util/dbops/restore_dbops.class.php");
 
 $id     = required_param('id', PARAM_INT);
 $remote = optional_param('remote', 0, PARAM_INT);
@@ -79,11 +81,55 @@ if (!empty($search)) {
         'filearea'  => 'backup',
         'itemid'    => $timestamp,
         'filepath'  => '/',
-        'filename'  => 'foo',
+        'filename'  => 'foo1',
         'timecreated' => $timestamp,
         'timemodified' => $timestamp
     );
+
+    $tmpid = restore_controller::get_tempdir_name($course->id, $USER->id);
+    $filepath = make_backup_temp_directory($tmpid);
+        if (!check_dir_exists($filepath, true, true)) {
+            throw new restore_controller_exception('cannot_create_backup_temp_dir');
+        }
+
     $storedfile = $fs->create_file_from_url($filerecord, $resp->url . '?token=' . $token, null, true);
+
+        $filepathold = $storedfile->get_filepath();
+
+
+    $fp = get_file_packer('application/vnd.moodle.backup');
+    $fp->extract_to_pathname($storedfile, $filepath);
+
+    // Reminder: To get get_config()
+
+
+    //access user.xml in backup?
+
+    $rc = new restore_controller($tmpid, $course->id, backup::INTERACTIVE_NO,
+             backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+
+
+
+    $plan = $rc->get_plan();
+            
+    $restoreinfo = $rc->get_info();
+
+
+    $rc->execute_precheck();
+
+    $file = $rc->get_plan()->get_basepath() . '/users.xml';
+
+    restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
+
+    $test = $DB->get_records('backup_ids_temp', ['backupid' => $rc->get_restoreid(), 'itemname' => 'user']);
+
+    try {
+        $result = restore_dbops::precheck_included_users($rc->get_restoreid(), $course->id, $USER->id, false, $rc->get_progress());
+    }
+    catch (Exception $e) {
+        printf($e);
+    }
+
     $restoreurl = new moodle_url(
         '/backup/restore.php',
         array(
@@ -92,6 +138,8 @@ if (!empty($search)) {
             'contenthash'  => $storedfile->get_contenthash()
         )
     );
+
+
     redirect($restoreurl);
 }
 
