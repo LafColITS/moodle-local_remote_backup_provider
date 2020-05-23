@@ -25,21 +25,29 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_remote_backup_provider', get_string('pluginname', 'local_remote_backup_provider'));
+    $settings = new admin_settingpage('local_remote_backup_provider',
+        get_string('pluginname', 'local_remote_backup_provider'));
     $ADMIN->add('localplugins', $settings);
 
-    $adminsetting = new admin_setting_configtext('remotesite', get_string('remotesite', 'local_remote_backup_provider'),
+    $adminsetting = new admin_setting_configtext('remotesite',
+        get_string('remotesite', 'local_remote_backup_provider'),
         get_string('remotesite_desc', 'local_remote_backup_provider'), '');
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
 
-    $adminsetting = new admin_setting_configtext('wstoken', get_string('wstoken', 'local_remote_backup_provider'),
+    $adminsetting = new admin_setting_configtext('wstoken',
+        get_string('wstoken', 'local_remote_backup_provider'),
         get_string('wstoken_desc', 'local_remote_backup_provider'), '');
     $settings->add($adminsetting);
 
     $options = ['username' => get_string('username'), 'email' => get_string('email'),
-        '' => get_string('donotcheckuser', 'local_remote_backup_provider')];
-    $adminsetting = new admin_setting_configselect('uniqueid', get_string('uniqueid', 'local_remote_backup_provider'),
+        'idnumber' => get_string('idnumber')];
+    // Check if email is unique in the site administration settings. Otherwise it is not possible to use email as unique attribute.
+    if($CFG->allowaccountssameemail) {
+        unset($options['email']);
+    }
+    $adminsetting = new admin_setting_configselect('uniqueid',
+        get_string('uniqueid', 'local_remote_backup_provider'),
         get_string('uniqueid_desc', 'local_remote_backup_provider'), 'username', $options);
     $settings->add($adminsetting);
 

@@ -69,7 +69,8 @@ if (!empty($search)) {
     $fs = get_file_storage();
     $url = $remotesite . '/webservice/rest/server.php?wstoken=' . $token .
         '&wsfunction=local_remote_backup_provider_get_course_backup_by_id&moodlewsrestformat=json';
-    $params = array('id' => $remote, 'username' => $USER->username);
+
+    $params = array('id' => $remote, 'uniqueid' => $USER->username);
     $curl = new curl;
     $resp = json_decode($curl->post($url, $params));
 
@@ -151,7 +152,7 @@ echo $OUTPUT->header();
 // Display the courses.
 if (!empty($data)) {
     echo html_writer::tag('h2', 'Available source courses');
-    echo html_writer::tag('i', 'Sourccontexte: ' . $remotesite);
+    echo html_writer::tag('i', 'Source: ' . $remotesite);
     echo html_writer::alist($data);
 }
 

@@ -43,7 +43,7 @@ class local_remote_backup_provider_external extends external_api {
     public static function find_courses_parameters() {
         return new external_function_parameters(
             array(
-                'search' => new external_value(PARAM_CLEAN, 'search'),
+                'search' => new external_value(PARAM_NOTAGS, 'search'),
             )
         );
     }
@@ -52,23 +52,19 @@ class local_remote_backup_provider_external extends external_api {
      * Find courses by text search.
      *
      * This function searches the course short name, full name, and idnumber.
+     * Only courses are returned where the user has the capability to backup courses.
      *
      * @param string $search The text to search on
      * @return array All courses found
      */
     public static function find_courses($search) {
         global $DB;
+        $courses = [];
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(self::find_courses_parameters(), array('search' => $search));
 
-        // Capability check.
-        if (!has_capability('moodle/course:viewhiddencourses', context_system::instance())) {
-            return false;
-        }
-
         // Build query.
-        $searchsql    = '';
         $searchparams = array();
         $searchlikes = array();
         $searchfields = array('c.shortname', 'c.fullname', 'c.idnumber');
@@ -76,13 +72,25 @@ class local_remote_backup_provider_external extends external_api {
             $searchlikes[$i] = $DB->sql_like($searchfields[$i], ":s{$i}", false, false);
             $searchparams["s{$i}"] = '%' . $search . '%';
         }
-        // We exclude the front page.
-        $searchsql = '(' . implode(' OR ', $searchlikes) . ') AND c.id != 1';
 
-        // Run query.
-        $fields = 'c.id,c.idnumber,c.shortname,c.fullname';
+        // Exclude the front page.
+        $searchsql = '(' . implode(' OR ', $searchlikes) . ') AND c.id != 1';
+        $fields = 'c.id,c.idnumber,c.shortname,c.fullname,c.visible';
         $sql = "SELECT $fields FROM {course} c WHERE $searchsql ORDER BY c.shortname ASC";
-        $courses = $DB->get_records_sql($sql, $searchparams, 0);
+        $courserecords = $DB->get_recordset_sql($sql, $searchparams, 0, 500);
+        // Only return courses user is allowed to backup.
+        foreach($courserecords as $course) {
+            context_helper::preload_from_record($course);
+            $coursecontext = context_course::instance($course->id);
+            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+                continue;
+            }
+            if (!has_capability('moodle/backup:backupcourse', $coursecontext)) {
+                continue;
+            }
+            $courses[$course->id] = $course;
+        }
+
         return $courses;
     }
 
@@ -113,7 +121,7 @@ class local_remote_backup_provider_external extends external_api {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'id'),
-                'username' => new external_value(PARAM_USERNAME, 'username'),
+                'uniqueid' => new external_value(\local_backup_provider\remote_backup_provider::get_param_type(), 'uniqueid')
             )
         );
     }
@@ -128,16 +136,16 @@ class local_remote_backup_provider_external extends external_api {
      * @param string $username The username
      * @return array|bool An array containing the url or false on failure
      */
-    public static function get_course_backup_by_id($id, $username) {
-        global $CFG, $DB;
+    public static function get_course_backup_by_id($id, $uniqueid) {
+        global $DB;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-            self::get_course_backup_by_id_parameters(), array('id' => $id, 'username' => $username)
+            self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
         );
 
-        // Extract the userid from the username.
-        $userid = $DB->get_field('user', 'id', array('username' => $username));
+        // Extract the userid from the unique user attribute.
+        $userid = $DB->get_field('user', 'id', \local_backup_provider\remote_backup_provider::get_uniqueid());
 
         // Instantiate controller.
         $bc = new backup_controller(

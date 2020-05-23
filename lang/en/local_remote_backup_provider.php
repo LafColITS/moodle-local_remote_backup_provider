@@ -33,6 +33,5 @@ $string['wstoken'] = 'Web service token';
 $string['wstoken_desc'] = 'Add the web service token from the remote site';
 $string['enableuserprecheck'] = 'Enable a user check before proceeding to the course restore.';
 $string['enabluserprecheck_desc'] = 'Checking this option will display a downloadable user list of the users included in the backup. There will be shown which users are going to be enrolled in the restored course and which users in the backup match the local users.';
-$string['donotcheckuser'] = 'Do not perform user checks (DANGER!)';
 $string['uniqueid'] = 'Matching user attribute';
 $string['uniqueid_desc'] = 'Use same value on remote and local site! On the remote Moodle instance only courses are shown, that the user with the matching user attribute is allowed to see. In order to identify the user on the remote instance, you can use either username or email address or DANGER!!!! nothing at all. The last options allows the user to backup all courses of the remote instance. ONLY USE IF YOU KNOW WHAT YOU ARE DOING.';
