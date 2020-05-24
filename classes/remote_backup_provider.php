@@ -130,21 +130,23 @@ class remote_backup_provider {
      */
     public static function get_uniqueid() {
         global $USER;
-        $uniqueidtype = get_config('local_remote_backup_provider', 'uniqueid');
+        $uniqueid = new \stdClass();
+        $uniqueid->type = get_config('local_remote_backup_provider', 'uniqueid');
         switch ($uniqueidtype) {
             case 'username':
-                $uniqueid = $USER->username;
+                $uniqueid->value = $USER->username;
                 break;
             case 'email':
-                $uniqueid = $USER->email;
+                $uniqueid->value = $USER->email;
                 break;
             case 'idnumber':
-                $uniqueid = $USER->idnumber;
+                $uniqueid->value = $USER->idnumber;
                 break;
             default:
-                $uniqueid = 'username';
+                $uniqueid->value = $USER->username;
+                $uniqueid->type = 'username';
         }
-        return [$uniqueidtype => $uniqueid];
+        return $uniqueid;
     }
 }
 

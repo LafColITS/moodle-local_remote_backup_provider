@@ -129,11 +129,11 @@ class local_remote_backup_provider_external extends external_api {
     /**
      * Create and retrieve a course backup by course id.
      *
-     * The user is looked up by username as it is not a given that user ids match
+     * The user is looked up by a unique user attribute as it is not a given that user ids match
      * across platforms.
      *
      * @param int $id the course id
-     * @param string $username The username
+     * @param string $uniqueid The unique user attribute like username, email or idnumber
      * @return array|bool An array containing the url or false on failure
      */
     public static function get_course_backup_by_id($id, $uniqueid) {
@@ -144,8 +144,9 @@ class local_remote_backup_provider_external extends external_api {
             self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
         );
 
-        // Extract the userid from the unique user attribute.
-        $userid = $DB->get_field('user', 'id', \local_remote_backup_provider\remote_backup_provider::get_uniqueid());
+        // Get the userid based on unique user attribute.
+        $uniqueattribute = \local_remote_backup_provider\remote_backup_provider::get_uniqueid();
+        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $uniqueattribute->value]);
 
         // Instantiate controller.
         $bc = new backup_controller(
