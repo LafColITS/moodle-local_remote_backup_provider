@@ -13,15 +13,92 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-namespace local_backup_provider;
+namespace local_remote_backup_provider;
+
+use context_course;
+use curl;
+use moodle_url;
 
 /**
  * Class backup_provider.
  * Provide basic functions for the remote backup provider. As of now only static functions.
  *
- * @package local_backup_provider
+ * @package local_remote_backup_provider
  */
 class remote_backup_provider {
+
+    /**
+     * @var int course id of the local course from where the remote backup provider was called.
+     */
+    public $id;
+
+    /**
+     * Token for webservice client.
+     * @var string
+     */
+    public $token = '';
+
+    /**
+     * The url to the remote site.
+     * @var string
+     */
+    public $remotesite = '';
+
+    /**
+     * The user attribute to match the local user with the remote user.
+     * @var string
+     */
+    public $uniqueid = '';
+
+    /**
+     * @var context_course
+     */
+    public $context;
+
+    /**
+     * Enable extended user check upon course restore process.
+     * @var bool
+     */
+    public $enableuserprecheck = false;
+
+    /**
+     * @var \stdClass
+     */
+    public $course;
+
+    /**
+     * Return param type expected for web service.
+     *
+     * @param int $id course id from where the remote backup provider is called
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public function __construct(int $id) {
+        global $DB;
+        $this->id = $id;
+        $this->token = get_config('local_remote_backup_provider', 'wstoken');
+        $this->remotesite = get_config('local_remote_backup_provider', 'remotesite');
+        $this->uniqueid = get_config('local_remote_backup_provider', 'uniqueid');
+        $this->enableuserprecheck = get_config('local_remote_backup_provider', 'enableuserprecheck');
+        $this->course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+        $this->context = context_course::instance($id);
+        $returnurl = new moodle_url('/course/view.php', array('id' => $id));
+        if (empty($this->token) || empty($this->remotesite)) {
+            print_error('pluginnotconfigured', 'local_remote_backup_provider', $returnurl);
+        }
+    }
+
+    /**
+     * Get the url for the course search service on the remote instance.
+     *
+     * @return string url
+     */
+    public function get_remote_data(string $service, array $params){
+        $url = $this->remotesite . '/webservice/rest/server.php?wstoken=' . $this->token .
+            '&wsfunction=' . $service . '&moodlewsrestformat=json';
+        $curl = new curl;
+        return json_decode($curl->post($url, $params));
+    }
 
     /**
      * Return param type expected for web service.
@@ -30,7 +107,7 @@ class remote_backup_provider {
      * @throws \dml_exception
      */
     public static function get_param_type() {
-        $uniquetype = get_config('local_backup_provider', 'uniqueid');
+        $uniquetype = get_config('local_remote_backup_provider', 'uniqueid');
         switch ($uniquetype) {
             case 'username':
                 $type = PARAM_USERNAME;

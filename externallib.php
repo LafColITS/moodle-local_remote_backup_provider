@@ -121,7 +121,7 @@ class local_remote_backup_provider_external extends external_api {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'id'),
-                'uniqueid' => new external_value(\local_backup_provider\remote_backup_provider::get_param_type(), 'uniqueid')
+                'uniqueid' => new external_value(\local_remote_backup_provider\remote_backup_provider::get_param_type(), 'uniqueid')
             )
         );
     }
@@ -145,7 +145,7 @@ class local_remote_backup_provider_external extends external_api {
         );
 
         // Extract the userid from the unique user attribute.
-        $userid = $DB->get_field('user', 'id', \local_backup_provider\remote_backup_provider::get_uniqueid());
+        $userid = $DB->get_field('user', 'id', \local_remote_backup_provider\remote_backup_provider::get_uniqueid());
 
         // Instantiate controller.
         $bc = new backup_controller(
