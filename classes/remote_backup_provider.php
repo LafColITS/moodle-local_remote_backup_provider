@@ -132,7 +132,7 @@ class remote_backup_provider {
         global $USER;
         $uniqueid = new \stdClass();
         $uniqueid->type = get_config('local_remote_backup_provider', 'uniqueid');
-        switch ($uniqueidtype) {
+        switch ($uniqueid->type) {
             case 'username':
                 $uniqueid->value = $USER->username;
                 break;
