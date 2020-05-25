@@ -70,7 +70,7 @@ class local_remote_backup_provider_external extends external_api {
         $searchfields = array('c.shortname', 'c.fullname', 'c.idnumber');
         for ($i = 0; $i < count($searchfields); $i++) {
             $searchlikes[$i] = $DB->sql_like($searchfields[$i], ":s{$i}", false, false);
-            $searchparams["s{$i}"] = '%' . $search . '%';
+            $searchparams["s{$i}"] = '%' . $params['search'] . '%';
         }
 
         // Exclude the front page.

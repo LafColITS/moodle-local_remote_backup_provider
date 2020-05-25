@@ -81,15 +81,15 @@ class extended_restore_controller {
      * @throws \file_exception
      * @throws \moodle_exception
      */
-    public function import_backup_file(){
+    public function import_backup_file() {
         // Import the backup file.
         $storedfile = $this->fs->create_file_from_url($this->filerecord,
             $this->remotecourse->url . '?token=' . $this->rbp->token, null, true);
         $restoreurl = new moodle_url('/backup/restore.php',
             array(
-                'contextid'    => $this->rbp->context->id,
+                'contextid' => $this->rbp->context->id,
                 'pathnamehash' => $storedfile->get_pathnamehash(),
-                'contenthash'  => $storedfile->get_contenthash()
+                'contenthash' => $storedfile->get_contenthash()
             )
         );
         redirect($restoreurl);
@@ -112,7 +112,7 @@ class extended_restore_controller {
 
         $fp = get_file_packer('application/vnd.moodle.backup');
         $fp->extract_to_pathname($storedfile, $filepath);
-        //access user.xml in backup?
+        // Access user.xml in backup?
 
         $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
             backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
