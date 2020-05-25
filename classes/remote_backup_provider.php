@@ -91,7 +91,7 @@ class remote_backup_provider {
     /**
      * Get the url for the course search service on the remote instance.
      *
-     * @return string url
+     * @return string[]|object[]
      */
     public function get_remote_data(string $service, array $params){
         $url = $this->remotesite . '/webservice/rest/server.php?wstoken=' . $this->token .
@@ -125,7 +125,7 @@ class remote_backup_provider {
      * Get uniqueidtype and value. Returns userfield as key and unique attribute of user as value.
      * The return array must have as key a fieldname of the user table, if unique attribute is used.
      *
-     * @return string[]
+     * @return \stdClass
      * @throws \dml_exception
      */
     public static function get_uniqueid() {

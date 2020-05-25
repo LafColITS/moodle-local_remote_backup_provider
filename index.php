@@ -28,8 +28,6 @@ use moodle_url;
 use stdClass;
 
 require_once(dirname(__FILE__) . '/../../config.php');
-require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
-require_once("{$CFG->dirroot}/backup/util/dbops/restore_dbops.class.php");
 
 $id     = required_param('id', PARAM_INT);
 // Remote course id.
