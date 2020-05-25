@@ -59,8 +59,8 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
         $course2 = new stdClass();
         $course2->fullname  = 'Test Course 2';
         $course2->shortname = 'CF102';
-        $c1 = $this->getDataGenerator()->create_course($course1);
-        $c2 = $this->getDataGenerator()->create_course($course2);
+        $this->getDataGenerator()->create_course($course1);
+        $this->getDataGenerator()->create_course($course2);
 
         $results = local_remote_backup_provider_external::find_courses('test');
         $this->assertEquals(2, count($results));

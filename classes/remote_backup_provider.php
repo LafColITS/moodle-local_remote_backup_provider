@@ -19,6 +19,8 @@ use context_course;
 use curl;
 use moodle_url;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class backup_provider.
  * Provide basic functions for the remote backup provider. As of now only static functions.
@@ -93,7 +95,7 @@ class remote_backup_provider {
      *
      * @return string[]|object[]
      */
-    public function get_remote_data(string $service, array $params){
+    public function get_remote_data(string $service, array $params) {
         $url = $this->remotesite . '/webservice/rest/server.php?wstoken=' . $this->token .
             '&wsfunction=' . $service . '&moodlewsrestformat=json';
         $curl = new curl;

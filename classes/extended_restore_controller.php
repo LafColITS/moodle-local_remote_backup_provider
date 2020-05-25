@@ -21,6 +21,8 @@ use restore_controller_exception;
 use restore_dbops;
 use backup;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class restore_controller.
  *
@@ -53,7 +55,7 @@ class extended_restore_controller {
      * @param int $remote
      * @throws \dml_exception
      */
-    public function __construct(remote_backup_provider $rbp, int $remote){
+    public function __construct(remote_backup_provider $rbp, int $remote) {
         $this->rbp = $rbp;
         $params['uniqueid'] = remote_backup_provider::get_uniqueid()->value;
         $params['id'] = $remote;
@@ -64,10 +66,10 @@ class extended_restore_controller {
         $this->filerecord = array(
             'contextid' => $this->rbp->context->id,
             'component' => 'local_remote_backup_provider',
-            'filearea'  => 'backup',
-            'itemid'    => $timestamp,
-            'filepath'  => '/',
-            'filename'  => 'foo1',
+            'filearea' => 'backup',
+            'itemid' => $timestamp,
+            'filepath' => '/',
+            'filename' => 'foo1',
             'timecreated' => $timestamp,
             'timemodified' => $timestamp
         );
@@ -96,7 +98,7 @@ class extended_restore_controller {
     /**
      *
      */
-    public function perform_precheck(){
+    public function perform_precheck() {
         global $DB, $USER;
         $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
         $filepath = make_backup_temp_directory($tmpid);
@@ -104,7 +106,8 @@ class extended_restore_controller {
             throw new restore_controller_exception('cannot_create_backup_temp_dir');
         }
 
-        $storedfile = $this->fs->create_file_from_url($filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token, null, true);
+        $storedfile = $this->fs->create_file_from_url($filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token,
+            null, true);
         $filepathold = $storedfile->get_filepath();
 
         $fp = get_file_packer('application/vnd.moodle.backup');
@@ -125,9 +128,9 @@ class extended_restore_controller {
         $test = $DB->get_records('backup_ids_temp', ['backupid' => $rc->get_restoreid(), 'itemname' => 'user']);
 
         try {
-            $result = restore_dbops::precheck_included_users($rc->get_restoreid(), $course->id, $USER->id, false, $rc->get_progress());
-        }
-        catch (Exception $e) {
+            $result = restore_dbops::precheck_included_users($rc->get_restoreid(), $course->id, $USER->id,
+                false, $rc->get_progress());
+        } catch (Exception $e) {
             printf($e);
         }
 

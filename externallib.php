@@ -79,7 +79,7 @@ class local_remote_backup_provider_external extends external_api {
         $sql = "SELECT $fields FROM {course} c WHERE $searchsql ORDER BY c.shortname ASC";
         $courserecords = $DB->get_recordset_sql($sql, $searchparams, 0, 500);
         // Only return courses user is allowed to backup.
-        foreach($courserecords as $course) {
+        foreach ($courserecords as $course) {
             context_helper::preload_from_record($course);
             $coursecontext = context_course::instance($course->id);
             if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
@@ -146,11 +146,11 @@ class local_remote_backup_provider_external extends external_api {
 
         // Get the userid based on unique user attribute.
         $uniqueattribute = \local_remote_backup_provider\remote_backup_provider::get_uniqueid();
-        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $uniqueattribute->value]);
+        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $params['uniqueid']]);
 
         // Instantiate controller.
-        $bc = new backup_controller(
-            \backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
+        $bc = new backup_controller(\backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
 
         // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);
@@ -159,7 +159,7 @@ class local_remote_backup_provider_external extends external_api {
 
         if (isset($result['backup_destination']) && $result['backup_destination']) {
             $file = $result['backup_destination'];
-            $context = context_course::instance($id);
+            $context = context_course::instance($params['id']);
             $fs = get_file_storage();
             $timestamp = time();
 
@@ -169,7 +169,7 @@ class local_remote_backup_provider_external extends external_api {
                 'filearea' => 'backup',
                 'itemid' => $timestamp,
                 'filepath' => '/',
-                'filename' => 'foo',
+                'filename' => 'coursebackup.mbz',
                 'timecreated' => $timestamp,
                 'timemodified' => $timestamp
             );
@@ -177,7 +177,6 @@ class local_remote_backup_provider_external extends external_api {
             $file->delete();
 
             // Make the link.
-            $filepath = $storedfile->get_filepath() . $storedfile->get_filename();
             $fileurl = moodle_url::make_webservice_pluginfile_url(
                 $storedfile->get_contextid(),
                 $storedfile->get_component(),

@@ -29,7 +29,7 @@ use stdClass;
 
 require_once(dirname(__FILE__) . '/../../config.php');
 
-$id     = required_param('id', PARAM_INT);
+$id = required_param('id', PARAM_INT);
 // Remote course id.
 $remote = optional_param('remote', 0, PARAM_INT);
 $search = optional_param('search', '', PARAM_NOTAGS);
@@ -60,7 +60,7 @@ if (!empty($search)) {
 } else if ($remote !== 0) {
     // Instantiate the restore controller, which handles the restore of the remote course.
     $restorecontroller = new extended_restore_controller($rbp, $remote);
-    if($rbp->enableuserprecheck == false) {
+    if ($rbp->enableuserprecheck == false) {
         // Direct import without prechecks.
         $restorecontroller->import_backup_file();
     } else {

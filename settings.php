@@ -43,7 +43,7 @@ if ($hassiteconfig) {
     $options = ['username' => get_string('username'), 'email' => get_string('email'),
         'idnumber' => get_string('idnumber')];
     // Check if email is unique in the site administration settings. Otherwise it is not possible to use email as unique attribute.
-    if($CFG->allowaccountssameemail) {
+    if ($CFG->allowaccountssameemail) {
         unset($options['email']);
     }
     $adminsetting = new admin_setting_configselect('uniqueid',
