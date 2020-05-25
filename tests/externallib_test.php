@@ -51,6 +51,7 @@ class local_remote_backup_provider_testcase extends externallib_advanced_testcas
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($r1, $user->id);
         $this->assignUserCapability('moodle/course:viewhiddencourses', $contextid, $r1);
+        $this->assignUserCapability('moodle/backup:backupcourse', $contextid, $r1);
         $this->setUser($user);
 
         $course1 = new stdClass();

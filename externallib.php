@@ -90,7 +90,6 @@ class local_remote_backup_provider_external extends external_api {
             }
             $courses[$course->id] = $course;
         }
-
         return $courses;
     }
 
