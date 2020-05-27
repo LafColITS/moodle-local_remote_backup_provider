@@ -34,6 +34,8 @@ $id = required_param('id', PARAM_INT);
 $remote = optional_param('remote', 0, PARAM_INT);
 $search = optional_param('search', '', PARAM_NOTAGS);
 
+$listofusers = null;
+
 // Create new instance of local_remote_backup_provider.
 $rbp = new remote_backup_provider($id);
 
@@ -65,7 +67,7 @@ if (!empty($search)) {
         $restorecontroller->import_backup_file();
     } else {
         // Peform extended user checks and reporting.
-        $restorecontroller->perform_precheck();
+        $listofusers = $restorecontroller->perform_precheck();
     }
 }
 
@@ -89,4 +91,12 @@ if (!$mform->is_cancelled()) {
     $mform->set_data($toform);
     $mform->display();
 }
+
+// Show the list of users to import.
+if ($listofusers) {
+    echo $restorecontroller->displaylistofusers($listofusers);
+}
+
+
+
 echo $OUTPUT->footer();

@@ -1,0 +1,75 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mooduell/viewpage
+    Template which defines a mooduell view page.
+    Classes required for JS:
+    * none
+    Data attributes required for JS:
+    * none
+    Context variables required for this template:
+    * headings - array: An array of table headings.
+    * rows - array: An array of content rows for the table.
+    
+    }}
+<h2>{{#str}} userstoimport, local_remote_backup_provider {{/str}}</h2>
+
+<table class="generaltable fullwidth fieldslist">
+    <thead>
+    <tr>
+        <th scope="col">{{#str}} username, local_remote_backup_provider {{/str}}</th>
+        <th scope="col">{{#str}} firstname, local_remote_backup_provider {{/str}}</th>
+        <th scope="col">{{#str}} lastname, local_remote_backup_provider {{/str}}</th>
+        <th scope="col">{{#str}} useremail, local_remote_backup_provider {{/str}}</th>
+        <th scope="col">{{#str}} issues, local_remote_backup_provider {{/str}}</th>
+        <th scope="col" class="text-right">{{#str}} action, local_remote_backup_provider {{/str}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#users}}
+        <tr class="{{{class}}}">
+            <td>{{{id}}} {{{username}}}</td>
+            <td>{{{firstname}}}</td>
+            <td>{{{lastname}}}</td>
+            <td>{{{useremail}}}</td>
+            <td>{{^matchuser}}
+                {{#pix}}
+                    t/markasread, core,  {{#str}} nomatch, local_remote_backup_provider {{/str}}
+                {{/pix}}
+            {{/matchuser}}
+                {{#matchuser}}
+                    <div class="form-group">
+                        <select class="form-control" id="exampleFormControlSelect1">
+                            <option>Create as new user...</option>
+                            {{#matchingusers}}
+                                <option>{{{username}}}, {{{useremail}}}</option>
+                            {{/matchingusers}}
+                        </select>
+                    </div>
+                {{/matchuser}}
+            </td>
+            <td class="text-right">
+                {{! <a href="{{editfieldurl}" data-role="editfield">{{#pix}
+                    t/edit, core, {{#str} edit, moodle {{/str} {{/pix}</a> }}
+                <a href="index.php?action=delete&id={{gameid}}" data-id="{{id}}" data-role="deletefield">{{#pix}}
+                t/delete, core, {{#str}} delete, moodle {{/str}} {{/pix}}</a>
+            </td>
+        </tr>
+    {{/users}}
+    </tbody>
+</table>
+
+{{^users}}
+    {{#str}} nouserstoimport, local_remote_backup_provider {{/str}}
+{{/users}}

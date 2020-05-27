@@ -126,6 +126,20 @@ class extended_restore_controller {
         restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
 
         $test = $DB->get_records('backup_ids_temp', ['backupid' => $rc->get_restoreid(), 'itemname' => 'user']);
+    public function displaylistofusers($list) {
+        global $PAGE;
+
+        $output = $PAGE->get_renderer('local_remote_backup_provider');
+        $out = '';
+        // Create the list of open games we can pass on to the renderer.
+
+        $viewpage = new viewpage($list);
+        $out .= $output->render_viewpage($viewpage);
+
+        $PAGE->requires->js_call_amd('local_remote_backup_provider/list', 'init');
+
+        return $out;
+    }
 
         try {
             $result = restore_dbops::precheck_included_users($rc->get_restoreid(), $course->id, $USER->id,
