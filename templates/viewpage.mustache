@@ -73,3 +73,9 @@
 {{^users}}
     {{#str}} nouserstoimport, local_remote_backup_provider {{/str}}
 {{/users}}
+
+{{#js}}
+    require(['local_remote_backup_provider/list'], function($) {
+        $.init();
+    });
+{{/js}}
