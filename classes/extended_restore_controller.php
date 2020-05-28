@@ -303,7 +303,7 @@ class extended_restore_controller {
     }
 
 
-    private function deleteuserfromuserxml(array $userids, $pathtoxml) {
+    public static function deleteuserfromuserxml(array $userids, $pathtoxml) {
 
         $contents = file_get_contents($pathtoxml);
 
@@ -316,6 +316,8 @@ class extended_restore_controller {
         }
         
         $result = file_put_contents($pathtoxml, $contents);
+
+        return $result;
     }
 
 
