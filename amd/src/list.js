@@ -1,10 +1,17 @@
-define(['jquery'], function($, ajax) {
- 
-     
+/**
+ * Edit items in feedback module
+ *
+ * @module     local_remote_backup_provider/list
+ * @package    local_remote_backup_provider
+ * @copyright  2020 Wunderbyte GmbH
+ */
+
+define(['jquery'], function ($) {
+
     return {
-        init: function() {
+        init: function () {
             //test
-            $(".form-control").change(function($value) {
+            $(".form-control").change(function ($value) {
                 alert($value);
             });
         }
