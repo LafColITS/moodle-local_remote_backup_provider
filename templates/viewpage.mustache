@@ -38,11 +38,11 @@
     </thead>
     <tbody>
     {{#users}}
-        <tr class="{{{class}}}">
-            <td>{{{id}}} {{{username}}}</td>
-            <td>{{{firstname}}}</td>
-            <td>{{{lastname}}}</td>
-            <td>{{{useremail}}}</td>
+        <tr class="{{{class}}} rbp_userrow" id="rbp_userrow_{{{id}}}" value="{{{id}}}">
+            <td id="rbp_userrow_{{{id}}}_username">{{{id}}} {{{username}}}</td>
+            <td id="rbp_userrow_{{{id}}}_firstname">{{{firstname}}}</td>
+            <td id="rbp_userrow_{{{id}}}_lastname">{{{lastname}}}</td>
+            <td id="rbp_userrow_{{{id}}}_useremail">{{{useremail}}}</td>
             <td>{{^matchuser}}
                 {{#pix}}
                     t/markasread, core,  {{#str}} nomatch, local_remote_backup_provider {{/str}}
@@ -50,10 +50,15 @@
             {{/matchuser}}
                 {{#matchuser}}
                     <div class="form-group">
-                        <select class="form-control" id="exampleFormControlSelect1">
+                        <select class="form-control rbp_dropdown" id="dropdown_{{{id}}}">
                             <option>Create as new user...</option>
                             {{#matchingusers}}
-                                <option>{{{username}}}, {{{useremail}}}</option>
+                                <option value={{{id}}}>
+                                <span id="rbp_optionaluserrow_{{{id}}}_username">{{{username}}}</span>,
+                                <span id="rbp_optionaluserrow_{{{id}}}_firstname">{{{firstname}}}</span>,
+                                <span id="rbp_optionaluserrow_{{{id}}}_lastname">{{{lastname}}}</span>,
+                                <span id="rbp_optionaluserrow_{{{id}}}_useremail">{{{useremail}}}</span>
+                                </option>
                             {{/matchingusers}}
                         </select>
                     </div>
@@ -62,7 +67,7 @@
             <td class="text-right">
                 {{! <a href="{{editfieldurl}" data-role="editfield">{{#pix}
                     t/edit, core, {{#str} edit, moodle {{/str} {{/pix}</a> }}
-                <a href="index.php?action=delete&id={{gameid}}" data-id="{{id}}" data-role="deletefield">{{#pix}}
+                <a class="rbp_delete" id="{{{id}}}">{{#pix}}
                 t/delete, core, {{#str}} delete, moodle {{/str}} {{/pix}}</a>
             </td>
         </tr>
