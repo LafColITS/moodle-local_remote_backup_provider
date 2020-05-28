@@ -123,6 +123,15 @@ class extended_restore_controller {
 
         $storedfile = $this->fs->create_file_from_url($this->filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token,
                 null, true);
+
+        $restoreurl = new moodle_url('/backup/restore.php',
+                array(
+                        'contextid' => $this->rbp->context->id,
+                        'pathnamehash' => $storedfile->get_pathnamehash(),
+                        'contenthash' => $storedfile->get_contenthash()
+                )
+        );
+        
         $filepathold = $storedfile->get_filepath();
 
         $fp = get_file_packer('application/vnd.moodle.backup');
@@ -138,7 +147,7 @@ class extended_restore_controller {
 
         $file = $rc->get_plan()->get_basepath() . '/users.xml';
 
-        $this->deleteuserfromuserxml([1811, 1810, 2], $rc->get_plan()->get_basepath() . '/users.xml');
+        //$this->deleteuserfromuserxml([1811, 1810, 2], $rc->get_plan()->get_basepath() . '/users.xml');
 
 
         restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
@@ -149,7 +158,7 @@ class extended_restore_controller {
 
         $users = $this->return_list_of_users_to_import($USER->id, $this->rbp->id, $rc->get_restoreid());
 
-        return $this->checkandmanipulateusers($users);
+        return $this->checkandmanipulateusers($users, $rc->get_restoreid(), $restoreurl);
     }
 
 
@@ -192,13 +201,13 @@ class extended_restore_controller {
         $viewpage = new viewpage($list);
         $out .= $output->render_viewpage($viewpage);
 
-        $PAGE->requires->js_call_amd('local_remote_backup_provider/list', 'init');
+        //$PAGE->requires->js_call_amd('local_remote_backup_provider/list', 'init');
 
         return $out;
     }
 
 
-    private function checkandmanipulateusers($users) {
+    private function checkandmanipulateusers($users, $restoreid, $restoreurl) {
 
         global $DB, $USER, $CFG;
 
@@ -227,7 +236,7 @@ class extended_restore_controller {
 
             // First, no troubles, clean match
             if ($recs = $DB->get_records('user', array('username'=>$user->username, 'email'=>$user->email))) {
-                $matchuserstring = null;
+                $matchuserstring = get_string('perfectmatch', 'local_remote_backup_provider');
             } else if ($recs = $DB->get_records('user', array('username'=>$user->username))) {
                 $matchuserstring = get_string('differentmail', 'local_remote_backup_provider');
             } else if ($recs = $DB->get_records('user', array('email'=>$user->email))) {
@@ -298,6 +307,9 @@ class extended_restore_controller {
         }
 
         $list['users'] = $list;
+        $list['restoreid'] = $restoreid;
+        $list['restoreurl'] = $restoreurl;
+        
 
         return $list;
     }
