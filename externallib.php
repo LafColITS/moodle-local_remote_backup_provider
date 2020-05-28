@@ -26,6 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/externallib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+// apparently use restore_controller does not work, we have to use require_once
+require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
 
 /**
  * Web service API definition.
@@ -199,6 +201,63 @@ class local_remote_backup_provider_external extends external_api {
         return new external_single_structure(
             array(
                 'url' => new external_value(PARAM_RAW, 'url of the backup file'),
+            )
+        );
+    }
+
+
+
+
+/**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_user_entry_from_backup_by_id_parameters() {
+        return new external_function_parameters(
+            array(
+                'id' => new external_value(PARAM_INT, 'id')
+            )
+        );
+    }
+
+
+
+
+/**
+     * Delete record from our users.xml in our backup
+     *
+     *
+     * @param int $id the course id
+     * @return array|bool An array containing the status
+     */
+    public static function delete_user_entry_from_backup_by_id($id) {
+
+        global $USER;
+
+        // Validate parameters passed from web service.
+        $params = self::validate_parameters(
+            self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id)
+        );
+
+        //now we can delete the record from our users.xml
+        
+
+        $result = array();
+        $result['status'] = 1;
+        
+        return $result;
+    }
+
+    /**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
+     * @return external_description
+     */
+    public static function delete_user_entry_from_backup_by_id_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
             )
         );
     }
