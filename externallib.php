@@ -216,7 +216,8 @@ class local_remote_backup_provider_external extends external_api {
     public static function delete_user_entry_from_backup_by_id_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'id')
+                'id' => new external_value(PARAM_INT, 'id'),
+                'restoreid' => new external_value(PARAM_RAW, 'restoreid')
             )
         );
     }
@@ -231,20 +232,28 @@ class local_remote_backup_provider_external extends external_api {
      * @param int $id the course id
      * @return array|bool An array containing the status
      */
-    public static function delete_user_entry_from_backup_by_id($id) {
+    public static function delete_user_entry_from_backup_by_id($id, $restoreid) {
 
         global $USER;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-            self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id)
+            self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id, 'restoreid' =>$restoreid)
         );
 
-        //now we can delete the record from our users.xml
-        
+        // We need the restore controller, to get the path of our backup.
+        $rc = restore_controller::load_controller($restoreid);
 
+        $plan = $rc->get_plan();
+
+        $pathtofile = $rc->get_plan()->get_basepath() . '/users.xml';
+
+        // //now we can delete the record from our users.xml
+
+        $success = \local_remote_backup_provider\extended_restore_controller::deleteuserfromuserxml([$id], $pathtofile);
+ 
         $result = array();
-        $result['status'] = 1;
+        $result['status'] = $success ? 1 : 0;
         
         return $result;
     }
