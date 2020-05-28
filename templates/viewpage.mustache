@@ -24,63 +24,70 @@
     
     }}
 <h2>{{#str}} userstoimport, local_remote_backup_provider {{/str}}</h2>
-
-<table class="generaltable fullwidth fieldslist">
-    <thead>
-    <tr>
-        <th scope="col">{{#str}} username, local_remote_backup_provider {{/str}}</th>
-        <th scope="col">{{#str}} firstname, local_remote_backup_provider {{/str}}</th>
-        <th scope="col">{{#str}} lastname, local_remote_backup_provider {{/str}}</th>
-        <th scope="col">{{#str}} useremail, local_remote_backup_provider {{/str}}</th>
-        <th scope="col">{{#str}} issues, local_remote_backup_provider {{/str}}</th>
-        <th scope="col" class="text-right">{{#str}} action, local_remote_backup_provider {{/str}}</th>
-    </tr>
-    </thead>
-    <tbody>
-    {{#users}}
-        <tr class="{{{class}}} rbp_userrow" id="rbp_userrow_{{{id}}}" value="{{{id}}}">
-            <td id="rbp_userrow_{{{id}}}_username">{{{id}}} {{{username}}}</td>
-            <td id="rbp_userrow_{{{id}}}_firstname">{{{firstname}}}</td>
-            <td id="rbp_userrow_{{{id}}}_lastname">{{{lastname}}}</td>
-            <td id="rbp_userrow_{{{id}}}_useremail">{{{useremail}}}</td>
-            <td>{{^matchuser}}
-                {{#pix}}
-                    t/markasread, core,  {{#str}} nomatch, local_remote_backup_provider {{/str}}
-                {{/pix}}
-            {{/matchuser}}
-                {{#matchuser}}
-                    <div class="form-group">
-                        <select class="form-control rbp_dropdown" id="dropdown_{{{id}}}">
-                            <option>Create as new user...</option>
-                            {{#matchingusers}}
-                                <option value={{{id}}}>
-                                <span id="rbp_optionaluserrow_{{{id}}}_username">{{{username}}}</span>,
-                                <span id="rbp_optionaluserrow_{{{id}}}_firstname">{{{firstname}}}</span>,
-                                <span id="rbp_optionaluserrow_{{{id}}}_lastname">{{{lastname}}}</span>,
-                                <span id="rbp_optionaluserrow_{{{id}}}_useremail">{{{useremail}}}</span>
-                                </option>
-                            {{/matchingusers}}
-                        </select>
-                    </div>
-                {{/matchuser}}
-            </td>
-            <td class="text-right">
-                {{! <a href="{{editfieldurl}" data-role="editfield">{{#pix}
-                    t/edit, core, {{#str} edit, moodle {{/str} {{/pix}</a> }}
-                <a class="rbp_delete" id="{{{id}}}">{{#pix}}
-                t/delete, core, {{#str}} delete, moodle {{/str}} {{/pix}}</a>
-            </td>
+<div id="tabletoexport" data-restoreid="{{{restoreid}}}">
+    <table class="generaltable fullwidth fieldslist">
+        <thead>
+        <tr>
+            <th scope="col">{{#str}} username, local_remote_backup_provider {{/str}}</th>
+            <th scope="col">{{#str}} firstname, local_remote_backup_provider {{/str}}</th>
+            <th scope="col">{{#str}} lastname, local_remote_backup_provider {{/str}}</th>
+            <th scope="col">{{#str}} useremail, local_remote_backup_provider {{/str}}</th>
+            <th scope="col">{{#str}} issues, local_remote_backup_provider {{/str}}</th>
+            <th scope="col" class="text-right">{{#str}} action, local_remote_backup_provider {{/str}}</th>
         </tr>
-    {{/users}}
-    </tbody>
-</table>
-
+        </thead>
+        <tbody>
+        {{#users}}
+            <tr class="{{class}}"
+                id="rbp_userrow_{{id}}"
+                data-username="{{username}}"
+                data-firstname="{{firstname}}"
+                data-lastname="{{lastname}}"
+                data-useremail="{{useremail}}">
+                <td class="includeincsv">{{{username}}}</td>
+                <td class="includeincsv">{{{firstname}}}</td>
+                <td class="includeincsv">{{{lastname}}}</td>
+                <td class="includeincsv">{{{useremail}}}</td>
+                <td class="includeincsv">{{matchuser}}</td>
+                <td class="text-right">{{^matchuser}}
+                    {{#pix}}
+                        t/markasread, core,  {{#str}} perfectmatch, local_remote_backup_provider {{/str}}
+                    {{/pix}}
+                {{/matchuser}}
+                    {{#matchuser}}
+                        <div class="form-group">
+                            <select class="form-control rbp_dropdown" id="{{id}}">
+                                <option class="blankvalue">Create as new user...</option>
+                                {{#matchingusers}}
+                                    <option class="optionvalue"
+                                            value={{id}}
+                                            data-username="{{username}}"
+                                            data-firstname="{{firstname}}"
+                                            data-lastname="{{lastname}}"
+                                            data-useremail="{{useremail}}">
+                                        {{{username}}} {{{useremail}}}
+                                    </option>
+                                {{/matchingusers}}
+                            </select>
+                        </div>
+                    {{/matchuser}}
+                    <a class="rbp_delete" id="{{id}}">{{#pix}}
+                        t/delete, core, {{#str}} delete, moodle {{/str}} {{/pix}}</a>
+                </td>
+            </tr>
+        {{/users}}
+        </tbody>
+    </table>
+</div>
 {{^users}}
     {{#str}} nouserstoimport, local_remote_backup_provider {{/str}}
 {{/users}}
 
+<a href="" id="linktodownload">Link to download</a>
+<a href="{{{restoreurl}}}" id="continue">Continue</a>
+
 {{#js}}
     require(['local_remote_backup_provider/list'], function($) {
-        $.init();
+    $.init();
     });
 {{/js}}
