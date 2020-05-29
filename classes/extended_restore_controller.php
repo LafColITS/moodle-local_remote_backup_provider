@@ -318,7 +318,8 @@ class extended_restore_controller {
     private function modify_link_to_profile(string $firststring, string $secondstring, int $userid) {
         global $CFG;
         if (strtolower($firststring) == strtolower($secondstring)) {
-            return '<a href="' . $CFG->httpswwwroot . '/user/profile.php?id=' . $userid .  '" class="text-success">' . $firststring . '</a>';
+            return $firststring;
+            //return '<a href="' . $CFG->httpswwwroot . '/user/profile.php?id=' . $userid .  '" class="text-success">' . $firststring . '</a>';
         } else {
             return $firststring;
         }
