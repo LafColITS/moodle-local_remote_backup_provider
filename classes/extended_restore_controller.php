@@ -308,6 +308,32 @@ class extended_restore_controller {
     }
 
     /**
+     * Modify the users.xml file in the course backup.
+     *
+     * @param array $userids
+     * @param string $pathtoxml
+     * @return false|int
+     */
+    public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname=null, $lastname=null, $useremail=null) {
+        $contents = file_get_contents($pathtoxml);
+
+            // First we get our user record.
+            $cutstring = strstr($contents, '<user id="'. $userid . '"');
+            $cutstring = strstr($cutstring, '</user>', true);
+
+            // Now we save the old string, as we will have to replace it
+            $newstring = $cutstring;
+
+            // And we replace what we need to replace in the new string;
+
+            // Finally, the new string replaces the old string;
+            $contents = str_replace($cutstring, $newstring, $contents);
+
+        $result = file_put_contents($pathtoxml, $contents);
+        return $result;
+    }
+
+    /**
      * Add CSS class to link to profile if necessary.
      *
      * @param string $firststring
