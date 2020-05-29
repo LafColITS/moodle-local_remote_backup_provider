@@ -48,7 +48,10 @@
                 <td class="includeincsv">{{{firstname}}}</td>
                 <td class="includeincsv">{{{lastname}}}</td>
                 <td class="includeincsv">{{{useremail}}}</td>
-                <td class="includeincsv">{{matchuser}}</td>
+                <td class="includeincsv">{{matchuser}}
+                {{^matchuser}}
+                        {{#str}} perfectmatch, local_remote_backup_provider {{/str}}
+                    {{/matchuser}}</td>
                 <td class="text-right">{{^matchuser}}
                     {{#pix}}
                         t/markasread, core,  {{#str}} perfectmatch, local_remote_backup_provider {{/str}}

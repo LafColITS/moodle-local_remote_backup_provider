@@ -218,7 +218,7 @@ class extended_restore_controller {
             // if ($rec = $DB->get_record('user', array('id'=>$user->id, 'username'=>$user->username, 'mnethostid'=>$user->mnethostid))) {
             // First, no troubles, clean match.
             if ($recs = $DB->get_records('user', array('username' => $user->username, 'email' => $user->email))) {
-                $matchuserstring = get_string('perfectmatch', 'local_remote_backup_provider');
+                $matchuserstring = null;
             } else if ($recs = $DB->get_records('user', array('username' => $user->username))) {
                 $matchuserstring = get_string('differentmail', 'local_remote_backup_provider');
             } else if ($recs = $DB->get_records('user', array('email' => $user->email))) {
@@ -263,7 +263,7 @@ class extended_restore_controller {
                         'useremail' => $this->modify_link_to_profile($rec->email, $user->email, $rec->id),
                         'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname, $rec->id),
                         'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname, $rec->id),
-                        'matchuser' => get_string('existinguser', 'local_remote_backup_provider'),
+                        'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
                     ];
 
                     // Overwrite newuser with span classes to show similarities to found records.
