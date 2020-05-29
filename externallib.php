@@ -238,22 +238,6 @@ class local_remote_backup_provider_external extends external_api {
 
         $success = extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
 
-        // Get the list of files in directory
-        $filestemp = get_directory_list($basepath, '', false, true, true);
-        $files = array();
-        foreach ($filestemp as $file) { // Add zip paths and fs paths to all them
-            $files[$file] = $basepath . '/' . $file;
-        }
-
-        // Calculate the zip fullpath (in OS temp area it's always backup.mbz)
-        $zipfile = $CFG->backuptempdir . '/updated_backup.mbz';
-
-        // Get the zip packer
-        $zippacker = get_file_packer('application/vnd.moodle.backup');
-
-        // Zip files
-        $success = $zippacker->archive_to_pathname($files, $zipfile, true);
-
         $result = array();
         $result['status'] = $success ? 1 : 0;
 
@@ -288,11 +272,16 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     * Delete record from our users.xml in our backup
      *
-     *
-     * @param int $id the course id
-     * @return array|bool An array containing the status
+     * Update our users.xml in our backup
+     * @param $id
+     * @param $restoreid
+     * @param $username
+     * @param $firstname
+     * @param $lastname
+     * @param $useremail
+     * @return array
+     * @throws invalid_parameter_exception
      */
     public static function update_user_entry_in_backup($id, $restoreid, $username, $firstname, $lastname, $useremail) {
 
@@ -321,6 +310,65 @@ class local_remote_backup_provider_external extends external_api {
 
         $success = extended_restore_controller::update_user_from_xml($id, $pathtofile, $username, $firstname, $lastname, $useremail);
 
+        $result = array();
+        $result['status'] = $success ? 1 : 0;
+
+        return $result;
+    }
+
+    /**
+     * Parameter description for update_user_entry_in_backup().
+     *
+     * @return external_function_parameters
+     */
+    public static function update_user_entry_in_backup_parameters() {
+        return new external_function_parameters(
+                array(
+                        'id' => new external_value(PARAM_INT, 'id'),
+                        'restoreid' => new external_value(PARAM_RAW, 'restoreid'),
+                        'username' => new external_value(PARAM_RAW, 'username'),
+                        'firstname' => new external_value(PARAM_RAW, 'firstname'),
+                        'lastname' => new external_value(PARAM_RAW, 'lastname'),
+                        'useremail' => new external_value(PARAM_RAW, 'useremail'),
+                )
+        );
+    }
+
+    /**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
+     * @return external_description
+     */
+    public static function update_user_entry_in_backup_returns() {
+        return new external_single_structure(
+                array(
+                        'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
+                )
+        );
+    }
+
+
+    /**
+     * Delete record from our users.xml in our backup
+     *
+     *
+     * @param int $restoreid
+     * @return array|bool An array containing the status
+     */
+    public static function create_updated_backup($restoreid) {
+
+        global $CFG;
+
+        // Validate parameters passed from web service.
+        $params = self::validate_parameters(
+                self::create_updated_backup_parameters(), array('restoreid' => $restoreid)
+        );
+
+        // We need the restore controller, to get the path of our backup.
+        $rc = restore_controller::load_controller($restoreid);
+
+        $basepath = $rc->get_plan()->get_basepath();
+
         // Get the list of files in directory
         $filestemp = get_directory_list($basepath, '', false, true, true);
         $files = array();
@@ -344,29 +392,24 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     * Parameter description for delete_user_entry_from_backup_by_id().
+     * Parameter description for create_updated_backup().
      *
      * @return external_function_parameters
      */
-    public static function update_user_entry_in_backup_parameters() {
+    public static function create_updated_backup_parameters() {
         return new external_function_parameters(
                 array(
-                        'id' => new external_value(PARAM_INT, 'id'),
-                        'restoreid' => new external_value(PARAM_RAW, 'restoreid'),
-                        'username' => new external_value(PARAM_RAW, 'username'),
-                        'firstname' => new external_value(PARAM_RAW, 'firstname'),
-                        'lastname' => new external_value(PARAM_RAW, 'lastname'),
-                        'useremail' => new external_value(PARAM_RAW, 'useremail'),
+                        'restoreid' => new external_value(PARAM_RAW, 'restoreid')
                 )
         );
     }
 
     /**
-     * Parameter description for delete_user_entry_from_backup_by_id().
+     * Parameter description for create_updated_backup().
      *
      * @return external_description
      */
-    public static function update_user_entry_in_backup_returns() {
+    public static function create_updated_backup_returns() {
         return new external_single_structure(
                 array(
                         'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),

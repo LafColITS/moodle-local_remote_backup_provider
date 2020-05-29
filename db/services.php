@@ -58,5 +58,14 @@ $functions = array(
                 'type' => 'write',
                 'ajax' => true,
                 'loginrequired' => true,
+        ),
+        'local_remote_backup_provider_create_updated_backup' => array(
+                'classname' => 'local_remote_backup_provider_external',
+                'methodname' => 'create_updated_backup',
+                'classpath' => 'local/remote_backup_provider/externallib.php',
+                'description' => 'Create a new backup file with the updated files',
+                'type' => 'write',
+                'ajax' => true,
+                'loginrequired' => true,
         )
 );

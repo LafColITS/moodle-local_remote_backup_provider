@@ -16,15 +16,19 @@
 namespace local_remote_backup_provider;
 
 use backup;
+use backup_controller_dbops;
+use backup_helper_exception;
+use coding_exception;
+use context_system;
 use dml_exception;
 use file_exception;
 use file_storage;
+use local_remote_backup_provider\output\viewpage;
 use moodle_exception;
 use moodle_url;
 use restore_controller;
 use restore_controller_exception;
 use restore_dbops;
-use local_remote_backup_provider\output\viewpage;
 
 // Apparently use restore_controller is not auto loaded, so use require_once.
 require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
@@ -84,6 +88,69 @@ class extended_restore_controller {
     }
 
     /**
+     * Modify the users.xml file in the course backup.
+     *
+     * @param array $userids
+     * @param string $pathtoxml
+     * @return false|int
+     */
+    public static function delete_user_from_xml(array $userids, string $pathtoxml) {
+        $contents = file_get_contents($pathtoxml);
+        foreach ($userids as $userid) {
+            $cutstring = strstr($contents, '<user id="' . $userid . '"');
+            $cutstring = strstr($cutstring, '</user>', true);
+            $contents = str_replace($cutstring . '</user>', '', $contents);
+        }
+        $result = file_put_contents($pathtoxml, $contents);
+        return $result;
+    }
+
+    /**
+     * Modify the users.xml file in the course backup.
+     *
+     * @param array $userids
+     * @param string $pathtoxml
+     * @return false|int
+     */
+    public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname = null,
+            $lastname = null, $useremail = null) {
+        $contents = file_get_contents($pathtoxml);
+
+        // First we get our user record.
+        $userstring = strstr($contents, '<user id="' . $userid . '"');
+        $userstring = strstr($userstring, '</user>', true);
+
+        // Now we save the old string, as we will have to replace it
+        $newuserstring = $userstring;
+
+        // And we replace what we need to replace in the new string;
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $username, "username");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $firstname, "firstname");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $lastname, "lastname");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "useremail");
+
+        // Finally, the new string replaces the old string;
+        $contents = str_replace($userstring, $newuserstring, $contents);
+
+        $result = file_put_contents($pathtoxml, $contents);
+        return $result;
+    }
+
+    public function replacestringbetweentags($contents, $replacestring, $tagstring) {
+        $opentag = "<" . $tagstring . ">";
+        $closetag = "</" . $tagstring . ">";
+        $cutstring = strstr($contents, $opentag);
+        $cutstring = strstr($cutstring, $closetag, true);
+        $toreplacestring = $cutstring . $closetag;
+
+        $replacestring = $opentag . $replacestring . $closetag;
+
+        $contents = str_replace($toreplacestring, $replacestring, $contents);
+
+        return $contents;
+    }
+
+    /**
      * Get course backup from remote instance and then perform the restore via redirect to Moodle restore dialogue
      *
      * @throws file_exception
@@ -107,7 +174,7 @@ class extended_restore_controller {
      * Perform user precheck in order to decide how to match users from remote site with users from local site.
      *
      * @return array
-     * @throws \backup_helper_exception
+     * @throws backup_helper_exception
      * @throws file_exception
      * @throws moodle_exception
      * @throws restore_controller_exception
@@ -126,9 +193,7 @@ class extended_restore_controller {
 
         $restoreurl = new moodle_url('/backup/restore.php',
                 array(
-                        'contextid' => $this->rbp->context->id,
-                        'pathnamehash' => $storedfile->get_pathnamehash(),
-                        'contenthash' => $storedfile->get_contenthash()
+                        'contextid' => $this->rbp->context->id
                 )
         );
 
@@ -165,26 +230,10 @@ class extended_restore_controller {
         // Iterate over all the included users.
         $rs = $DB->get_recordset('backup_ids_temp', $conditions, '', 'itemid, info');
         foreach ($rs as $recuser) {
-            $user = (object) \backup_controller_dbops::decode_backup_temp_info($recuser->info);
+            $user = (object) backup_controller_dbops::decode_backup_temp_info($recuser->info);
             $users[] = $user;
         }
         return $users;
-    }
-
-    /**
-     * Hand over data to renderer.
-     *
-     * @param array $list
-     * @return string
-     */
-    public function display_userlist(array $list) {
-        global $PAGE;
-        $output = $PAGE->get_renderer('local_remote_backup_provider');
-        $out = '';
-        // Create the list of open games we can pass on to the renderer.
-        $viewpage = new viewpage($list);
-        $out .= $output->render_viewpage($viewpage);
-        return $out;
     }
 
     /**
@@ -194,19 +243,19 @@ class extended_restore_controller {
      * @param string $restoreid
      * @param moodle_url $restoreurl
      * @return array
-     * @throws \coding_exception
+     * @throws coding_exception
      * @throws dml_exception
      */
     private function process_users(array $users, string $restoreid, moodle_url $restoreurl) {
         global $DB, $USER, $CFG;
-        $context = \context_system::instance();
+        $context = context_system::instance();
         $userid = $USER->id;
 
         // Check capability if logged in users is able to create users and see user details.
         $cancreateuser = false;
         if (has_capability('moodle/restore:createuser', $context, $userid) and
-            has_capability('moodle/restore:userinfo', $context, $userid) and
-            empty($CFG->disableusercreationonrestore)) { // Can create users
+                has_capability('moodle/restore:userinfo', $context, $userid) and
+                empty($CFG->disableusercreationonrestore)) { // Can create users
             $cancreateuser = true;
         }
 
@@ -237,13 +286,13 @@ class extended_restore_controller {
             }
 
             $newuser = [
-                'id' => $user->id,
-                'username' => $user->username,
-                'useremail' => $user->email,
-                'firstname' => $user->firstname,
-                'lastname' => $user->lastname,
-                'matchuser' => $matchuserstring,
-                'class' => 'table-success'
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'useremail' => $user->email,
+                    'firstname' => $user->firstname,
+                    'lastname' => $user->lastname,
+                    'matchuser' => $matchuserstring,
+                    'class' => 'table-success'
             ];
 
             // We can't import users if we don't have the right to.
@@ -258,12 +307,12 @@ class extended_restore_controller {
                 // Run through the result of our DB Search, we might have more than one match.
                 foreach ($recs as $rec) {
                     $existinguser = [
-                        'id' => $rec->id,
-                        'username' => $this->modify_link_to_profile($rec->username, $user->username, $rec->id),
-                        'useremail' => $this->modify_link_to_profile($rec->email, $user->email, $rec->id),
-                        'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname, $rec->id),
-                        'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname, $rec->id),
-                        'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
+                            'id' => $rec->id,
+                            'username' => $this->modify_link_to_profile($rec->username, $user->username, $rec->id),
+                            'useremail' => $this->modify_link_to_profile($rec->email, $user->email, $rec->id),
+                            'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname, $rec->id),
+                            'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname, $rec->id),
+                            'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
                     ];
 
                     // Overwrite newuser with span classes to show similarities to found records.
@@ -290,69 +339,6 @@ class extended_restore_controller {
     }
 
     /**
-     * Modify the users.xml file in the course backup.
-     *
-     * @param array $userids
-     * @param string $pathtoxml
-     * @return false|int
-     */
-    public static function delete_user_from_xml(array $userids, string $pathtoxml) {
-        $contents = file_get_contents($pathtoxml);
-        foreach ($userids as $userid) {
-            $cutstring = strstr($contents, '<user id="'. $userid . '"');
-            $cutstring = strstr($cutstring, '</user>', true);
-            $contents = str_replace($cutstring . '</user>', '', $contents);
-        }
-        $result = file_put_contents($pathtoxml, $contents);
-        return $result;
-    }
-
-    /**
-     * Modify the users.xml file in the course backup.
-     *
-     * @param array $userids
-     * @param string $pathtoxml
-     * @return false|int
-     */
-    public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname=null, $lastname=null, $useremail=null) {
-        $contents = file_get_contents($pathtoxml);
-
-        // First we get our user record.
-        $userstring = strstr($contents, '<user id="'. $userid . '"');
-        $userstring = strstr($userstring, '</user>', true);
-
-        // Now we save the old string, as we will have to replace it
-        $newuserstring = $userstring;
-
-        // And we replace what we need to replace in the new string;
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $username, "username");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $firstname, "firstname");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $lastname, "lastname");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "useremail");
-
-        // Finally, the new string replaces the old string;
-        $contents = str_replace($userstring, $newuserstring, $contents);
-
-        $result = file_put_contents($pathtoxml, $contents);
-        return $result;
-    }
-
-    public function replacestringbetweentags($contents, $replacestring, $tagstring) {
-        $opentag = "<" . $tagstring . ">";
-        $closetag = "</" . $tagstring . ">";
-        $cutstring = strstr($contents, $opentag);
-        $cutstring = strstr($cutstring, $closetag, true);
-        $toreplacestring = $cutstring . $closetag;
-
-        $replacestring = $opentag . $replacestring . $closetag;
-
-        $contents = str_replace($toreplacestring, $replacestring, $contents);
-
-        return $contents;
-    }
-
-
-    /**
      * Add CSS class to link to profile if necessary.
      *
      * @param string $firststring
@@ -368,6 +354,22 @@ class extended_restore_controller {
         } else {
             return $firststring;
         }
+    }
+
+    /**
+     * Hand over data to renderer.
+     *
+     * @param array $list
+     * @return string
+     */
+    public function display_userlist(array $list) {
+        global $PAGE;
+        $output = $PAGE->get_renderer('local_remote_backup_provider');
+        $out = '';
+        // Create the list of open games we can pass on to the renderer.
+        $viewpage = new viewpage($list);
+        $out .= $output->render_viewpage($viewpage);
+        return $out;
     }
 }
 

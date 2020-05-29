@@ -70,44 +70,15 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         }
     };
 
-    // var updatedatawithuser = function (dataelement, user) {
-    //     dataelement.data('username', user['username']);
-    //     dataelement.data('firstname', user['firstname']);
-    //     dataelement.data('lastname', user['lastname']);
-    //     dataelement.data('useremail', user['useremail']);
-    // };
-
-    // var updaterowwithuser = function (dataelement, user) {
-    //     dataelement.text(user['username']
-    //         + " " + user['firstname']
-    //         + " " + user['lastname']
-    //         + " " + user['useremail']);
-    // };
-
-    // var updateoptionelementwithuser = function (dataElement, user) {
-    //     dataElement.find('td').eq(0).html(user['username']);
-    //     dataElement.find('td').eq(1).html(user['firstname']);
-    //     dataElement.find('td').eq(2).html(user['lastname']);
-    //     dataElement.find('td').eq(3).html(user['useremail']);
-    // };
-
     return {
         init: function () {
             //we add listener to dropdown function
             $(".rbp_dropdown").change(function () {
 
                 //collect all the values
-                //var restoreid = $('#tabletoexport').data('restoreid');
-
                 var optionaluserelement = $(this).find('.optionvalue:selected');
                 var firstuserelement = $('#rbp_userrow_' + this.id);
                 var restoreid = $('#tabletoexport').data('restoreid');
-
-                //var link = $('#continue').attr("href");
-                // if (link.indexOf("&pathnamehash") != -1) {
-                //     link = link.substring(0, link.indexOf("&pathnamehash"));
-                //     link = link + "&filename=updated_backup.mbz";
-                // }
 
                 var optionaluser = {
                     'id': $(this).val(),
@@ -169,12 +140,6 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
 
                 var restoreid = $('#tabletoexport').data('restoreid');
 
-                // var link = $('#continue').attr("href");
-                // if (link.indexOf("&pathnamehash") != -1) {
-                //     link = link.substring(0, link.indexOf("&pathnamehash"));
-                //     link = link + "&filename=updated_backup.mbz";
-                // }
-
                 var id = this.id;
                 ajax.call([{
                     methodname: "local_remote_backup_provider_delete_user_entry_from_backup",
@@ -195,13 +160,18 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
 
             $('#continue').click(function () {
 
-                var link = $('#continue').data('href');
-                if (link.indexOf("&pathnamehash") != -1) {
-                    link = link.substring(0, link.indexOf("&pathnamehash"));
-                    link = link + "&filename=updated_backup.mbz";
-                }
+                var restorelink = $('#continue').data('href');
+                var restoreid = $('#tabletoexport').data('restoreid');
+                var link = restorelink+"&filename=updated_backup.mbz";
 
-                window.location = link;
+                ajax.call([{
+                    methodname: "local_remote_backup_provider_create_updated_backup",
+                    args: {'restoreid': restoreid},
+                    done: function () {
+                        window.location = link;
+                    },
+                    fail: notification.exception
+                }]);
             });
         },
     };
