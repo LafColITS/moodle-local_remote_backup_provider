@@ -234,7 +234,7 @@ class local_remote_backup_provider_external extends external_api {
      */
     public static function delete_user_entry_from_backup_by_id($id, $restoreid) {
 
-        global $USER, $DB;
+        global $USER, $CFG;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
@@ -263,7 +263,7 @@ class local_remote_backup_provider_external extends external_api {
         }
 
         // Calculate the zip fullpath (in OS temp area it's always backup.mbz)
-        $zipfile = $basepath . '/updated_backup.mbz';
+        $zipfile = $CFG->backuptempdir . '/updated_backup.mbz';
 
         // Get the zip packer
         $zippacker = get_file_packer('application/vnd.moodle.backup');
