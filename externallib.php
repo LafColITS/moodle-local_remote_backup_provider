@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_remote_backup_provider\extended_restore_controller;
+use local_remote_backup_provider\remote_backup_provider;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/externallib.php');
@@ -37,19 +40,6 @@ require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_remote_backup_provider_external extends external_api {
-    /**
-     * Parameter description for find_courses().
-     *
-     * @return external_function_parameters
-     */
-    public static function find_courses_parameters() {
-        return new external_function_parameters(
-            array(
-                'search' => new external_value(PARAM_NOTAGS, 'search'),
-            )
-        );
-    }
-
     /**
      * Find courses by text search.
      *
@@ -98,32 +88,31 @@ class local_remote_backup_provider_external extends external_api {
     /**
      * Parameter description for find_courses().
      *
-     * @return external_description
+     * @return external_function_parameters
      */
-    public static function find_courses_returns() {
-        return new external_multiple_structure(
-            new external_single_structure(
+    public static function find_courses_parameters() {
+        return new external_function_parameters(
                 array(
-                    'id'        => new external_value(PARAM_INT, 'id of course'),
-                    'idnumber'  => new external_value(PARAM_RAW, 'idnumber of course'),
-                    'shortname' => new external_value(PARAM_RAW, 'short name of course'),
-                    'fullname'  => new external_value(PARAM_RAW, 'long name of course'),
+                        'search' => new external_value(PARAM_NOTAGS, 'search'),
                 )
-            )
         );
     }
 
     /**
-     * Parameter description for get_course_backup_by_id().
+     * Parameter description for find_courses().
      *
-     * @return external_function_parameters
+     * @return external_description
      */
-    public static function get_course_backup_by_id_parameters() {
-        return new external_function_parameters(
-            array(
-                'id' => new external_value(PARAM_INT, 'id'),
-                'uniqueid' => new external_value(\local_remote_backup_provider\remote_backup_provider::get_param_type(), 'uniqueid')
-            )
+    public static function find_courses_returns() {
+        return new external_multiple_structure(
+                new external_single_structure(
+                        array(
+                                'id' => new external_value(PARAM_INT, 'id of course'),
+                                'idnumber' => new external_value(PARAM_RAW, 'idnumber of course'),
+                                'shortname' => new external_value(PARAM_RAW, 'short name of course'),
+                                'fullname' => new external_value(PARAM_RAW, 'long name of course'),
+                        )
+                )
         );
     }
 
@@ -142,16 +131,16 @@ class local_remote_backup_provider_external extends external_api {
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-            self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
+                self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
         );
 
         // Get the userid based on unique user attribute.
-        $uniqueattribute = \local_remote_backup_provider\remote_backup_provider::get_uniqueid();
+        $uniqueattribute = remote_backup_provider::get_uniqueid();
         $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $params['uniqueid']]);
 
         // Instantiate controller.
-        $bc = new backup_controller(\backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
+        $bc = new backup_controller(backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE,
+                backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
 
         // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);
@@ -165,26 +154,26 @@ class local_remote_backup_provider_external extends external_api {
             $timestamp = time();
 
             $filerecord = array(
-                'contextid' => $context->id,
-                'component' => 'local_remote_backup_provider',
-                'filearea' => 'backup',
-                'itemid' => $timestamp,
-                'filepath' => '/',
-                'filename' => 'coursebackup.mbz',
-                'timecreated' => $timestamp,
-                'timemodified' => $timestamp
+                    'contextid' => $context->id,
+                    'component' => 'local_remote_backup_provider',
+                    'filearea' => 'backup',
+                    'itemid' => $timestamp,
+                    'filepath' => '/',
+                    'filename' => 'coursebackup.mbz',
+                    'timecreated' => $timestamp,
+                    'timemodified' => $timestamp
             );
             $storedfile = $fs->create_file_from_storedfile($filerecord, $file);
             $file->delete();
 
             // Make the link.
             $fileurl = moodle_url::make_webservice_pluginfile_url(
-                $storedfile->get_contextid(),
-                $storedfile->get_component(),
-                $storedfile->get_filearea(),
-                $storedfile->get_itemid(),
-                $storedfile->get_filepath(),
-                $storedfile->get_filename()
+                    $storedfile->get_contextid(),
+                    $storedfile->get_component(),
+                    $storedfile->get_filearea(),
+                    $storedfile->get_itemid(),
+                    $storedfile->get_filepath(),
+                    $storedfile->get_filename()
             );
             return array('url' => $fileurl->out(true));
         } else {
@@ -195,37 +184,32 @@ class local_remote_backup_provider_external extends external_api {
     /**
      * Parameter description for get_course_backup_by_id().
      *
+     * @return external_function_parameters
+     */
+    public static function get_course_backup_by_id_parameters() {
+        return new external_function_parameters(
+                array(
+                        'id' => new external_value(PARAM_INT, 'id'),
+                        'uniqueid' => new external_value(remote_backup_provider::get_param_type(),
+                                'uniqueid')
+                )
+        );
+    }
+
+    /**
+     * Parameter description for get_course_backup_by_id().
+     *
      * @return external_description
      */
     public static function get_course_backup_by_id_returns() {
         return new external_single_structure(
-            array(
-                'url' => new external_value(PARAM_RAW, 'url of the backup file'),
-            )
+                array(
+                        'url' => new external_value(PARAM_RAW, 'url of the backup file'),
+                )
         );
     }
 
-
-
-
-/**
-     * Parameter description for delete_user_entry_from_backup_by_id().
-     *
-     * @return external_function_parameters
-     */
-    public static function delete_user_entry_from_backup_by_id_parameters() {
-        return new external_function_parameters(
-            array(
-                'id' => new external_value(PARAM_INT, 'id'),
-                'restoreid' => new external_value(PARAM_RAW, 'restoreid')
-            )
-        );
-    }
-
-
-
-
-/**
+    /**
      * Delete record from our users.xml in our backup
      *
      *
@@ -238,21 +222,21 @@ class local_remote_backup_provider_external extends external_api {
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-            self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id, 'restoreid' =>$restoreid)
+                self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id, 'restoreid' => $restoreid)
         );
 
         // We need the restore controller, to get the path of our backup.
         $rc = restore_controller::load_controller($restoreid);
 
         $basepath = $rc->get_plan()->get_basepath();
-        
+
         $plan = $rc->get_plan();
 
         $pathtofile = $basepath . '/users.xml';
 
         // //now we can delete the record from our users.xml
 
-        $success = \local_remote_backup_provider\extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
+        $success = extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
 
         // Get the list of files in directory
         $filestemp = get_directory_list($basepath, '', false, true, true);
@@ -279,13 +263,114 @@ class local_remote_backup_provider_external extends external_api {
     /**
      * Parameter description for delete_user_entry_from_backup_by_id().
      *
+     * @return external_function_parameters
+     */
+    public static function delete_user_entry_from_backup_by_id_parameters() {
+        return new external_function_parameters(
+                array(
+                        'id' => new external_value(PARAM_INT, 'id'),
+                        'restoreid' => new external_value(PARAM_RAW, 'restoreid')
+                )
+        );
+    }
+
+    /**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
      * @return external_description
      */
     public static function delete_user_entry_from_backup_by_id_returns() {
         return new external_single_structure(
-            array(
-                'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
-            )
+                array(
+                        'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
+                )
+        );
+    }
+
+    /**
+     * Delete record from our users.xml in our backup
+     *
+     *
+     * @param int $id the course id
+     * @return array|bool An array containing the status
+     */
+    public static function update_user_entry_in_backup($id, $restoreid, $username, $firstname, $lastname, $useremail) {
+
+        global $USER, $CFG;
+
+        // Validate parameters passed from web service.
+        $params = self::validate_parameters(
+                self::update_user_entry_in_backup_parameters(), array('id' => $id,
+                'restoreid' => $restoreid,
+                'username' => $username,
+                'firstname' => $firstname,
+                'lastname' =>$lastname,
+                'useremail' =>$useremail)
+        );
+
+        // We need the restore controller, to get the path of our backup.
+        $rc = restore_controller::load_controller($restoreid);
+
+        $basepath = $rc->get_plan()->get_basepath();
+
+        $plan = $rc->get_plan();
+
+        $pathtofile = $basepath . '/users.xml';
+
+        // //now we can delete the record from our users.xml
+
+        $success = extended_restore_controller::update_user_from_xml($id, $pathtofile, $username, $firstname, $lastname, $useremail);
+
+        // Get the list of files in directory
+        $filestemp = get_directory_list($basepath, '', false, true, true);
+        $files = array();
+        foreach ($filestemp as $file) { // Add zip paths and fs paths to all them
+            $files[$file] = $basepath . '/' . $file;
+        }
+
+        // Calculate the zip fullpath (in OS temp area it's always backup.mbz)
+        $zipfile = $CFG->backuptempdir . '/updated_backup.mbz';
+
+        // Get the zip packer
+        $zippacker = get_file_packer('application/vnd.moodle.backup');
+
+        // Zip files
+        $success = $zippacker->archive_to_pathname($files, $zipfile, true);
+
+        $result = array();
+        $result['status'] = $success ? 1 : 0;
+
+        return $result;
+    }
+
+    /**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
+     * @return external_function_parameters
+     */
+    public static function update_user_entry_in_backup_parameters() {
+        return new external_function_parameters(
+                array(
+                        'id' => new external_value(PARAM_INT, 'id'),
+                        'restoreid' => new external_value(PARAM_RAW, 'restoreid'),
+                        'username' => new external_value(PARAM_RAW, 'username'),
+                        'firstname' => new external_value(PARAM_RAW, 'firstname'),
+                        'lastname' => new external_value(PARAM_RAW, 'lastname'),
+                        'useremail' => new external_value(PARAM_RAW, 'useremail'),
+                )
+        );
+    }
+
+    /**
+     * Parameter description for delete_user_entry_from_backup_by_id().
+     *
+     * @return external_description
+     */
+    public static function update_user_entry_in_backup_returns() {
+        return new external_single_structure(
+                array(
+                        'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
+                )
         );
     }
 }
