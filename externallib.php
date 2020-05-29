@@ -234,7 +234,7 @@ class local_remote_backup_provider_external extends external_api {
      */
     public static function delete_user_entry_from_backup_by_id($id, $restoreid) {
 
-        global $USER;
+        global $USER, $DB;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
@@ -244,13 +244,32 @@ class local_remote_backup_provider_external extends external_api {
         // We need the restore controller, to get the path of our backup.
         $rc = restore_controller::load_controller($restoreid);
 
+
+        $basepath = $rc->get_plan()->get_basepath();
+        
         $plan = $rc->get_plan();
 
-        $pathtofile = $rc->get_plan()->get_basepath() . '/users.xml';
+        $pathtofile = $basepath . '/users.xml';
 
         // //now we can delete the record from our users.xml
 
         $success = \local_remote_backup_provider\extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
+
+        // Get the list of files in directory
+        $filestemp = get_directory_list($basepath, '', false, true, true);
+        $files = array();
+        foreach ($filestemp as $file) { // Add zip paths and fs paths to all them
+            $files[$file] = $basepath . '/' . $file;
+        }
+
+        // Calculate the zip fullpath (in OS temp area it's always backup.mbz)
+        $zipfile = $basepath . '/updated_backup.mbz';
+
+        // Get the zip packer
+        $zippacker = get_file_packer('application/vnd.moodle.backup');
+
+        // Zip files
+        $result = $zippacker->archive_to_pathname($files, $zipfile, true);
 
         $result = array();
         $result['status'] = $success ? 1 : 0;
