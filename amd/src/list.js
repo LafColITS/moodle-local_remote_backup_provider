@@ -70,6 +70,13 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         }
     };
 
+    var updatedatawithuser = function(dataelement, user) {
+        dataelement.data('username', user['username']);
+        dataelement.data('firstname', user['firstname']);
+        dataelement.data('lastname', user['lastname']);
+        dataelement.data('useremail', user['useremail']);
+    };
+
     return {
         init: function () {
             //we add listener to dropdown function
@@ -111,15 +118,8 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     firstuserelement.find('td').eq(3).html(optionaluser['useremail']);
 
                     // And now we switch the database.
-                    firstuserelement.data('username', optionaluser['username']);
-                    firstuserelement.data('firstname', optionaluser['firstname']);
-                    firstuserelement.data('lastname', optionaluser['lastname']);
-                    firstuserelement.data('useremail', optionaluser['useremail']);
-
-                    optionaluserelement.data('username', firstuser['username']);
-                    optionaluserelement.data('firstname', firstuser['firstname']);
-                    optionaluserelement.data('lastname', firstuser['lastname']);
-                    optionaluserelement.data('useremail', firstuser['useremail']);
+                    updatedatawithuser(firstuserelement, optionaluser);
+                    updatedatawithuser(optionaluserelement, firstuser);
 
                     var blankelement = $(this).find('.blankvalue');
                     blankelement.text('Merged with existing user');
@@ -128,7 +128,8 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     blankelement.removeAttr('selected');
                 }
                 else {
-                    alert("we drew blank");
+                    // Do nothing.
+
                 }
             });
 
