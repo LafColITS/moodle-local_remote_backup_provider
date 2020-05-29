@@ -244,7 +244,6 @@ class local_remote_backup_provider_external extends external_api {
         // We need the restore controller, to get the path of our backup.
         $rc = restore_controller::load_controller($restoreid);
 
-
         $basepath = $rc->get_plan()->get_basepath();
         
         $plan = $rc->get_plan();
@@ -269,7 +268,7 @@ class local_remote_backup_provider_external extends external_api {
         $zippacker = get_file_packer('application/vnd.moodle.backup');
 
         // Zip files
-        $result = $zippacker->archive_to_pathname($files, $zipfile, true);
+        $success = $zippacker->archive_to_pathname($files, $zipfile, true);
 
         $result = array();
         $result['status'] = $success ? 1 : 0;
