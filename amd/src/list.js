@@ -187,9 +187,21 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                 }]);
             });
             $('#linktodownload').click(function () {
-                //window.location.href('');
+
                 var args = [$('#tabletoexport>table'), 'userlist.csv'];
                 exportTableToCSV.apply(this, args);
+                alert ('done');
+            });
+
+            $('#continue').click(function () {
+
+                var link = $('#continue').data('href');
+                if (link.indexOf("&pathnamehash") != -1) {
+                    link = link.substring(0, link.indexOf("&pathnamehash"));
+                    link = link + "&filename=updated_backup.mbz";
+                }
+
+                window.location = link;
             });
         },
     };

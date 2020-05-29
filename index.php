@@ -21,7 +21,9 @@
  * @copyright  2015 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_remote_backup_provider;
+
 use html_writer;
 use local_remote_backup_provider\forms\search_form;
 use moodle_url;
@@ -53,10 +55,10 @@ if (!empty($search)) {
     $data = array();
     foreach ($results as $result) {
         $data[] = html_writer::link(
-            new moodle_url('/local/remote_backup_provider/index.php',
-                array('id' => $id, 'remote' => $result->id)
-            ),
-            '[' . $result->shortname . '] ' . $result->fullname
+                new moodle_url('/local/remote_backup_provider/index.php',
+                        array('id' => $id, 'remote' => $result->id)
+                ),
+                '[' . $result->shortname . '] ' . $result->fullname
         );
     }
 } else if ($remote !== 0) {
@@ -76,27 +78,25 @@ $PAGE->set_heading($rbp->course->fullname);
 
 echo $OUTPUT->header();
 
-// Display the courses.
-if (!empty($data)) {
-    echo html_writer::tag('h2', 'Available source courses');
-    echo html_writer::tag('i', 'Source: ' . $rbp->remotesite);
-    echo html_writer::alist($data);
-}
-
-// Show the search form.
-$mform = new search_form();
-if (!$mform->is_cancelled()) {
-    $toform = new stdClass();
-    $toform->id = $id;
-    $mform->set_data($toform);
-    $mform->display();
-}
-
 // Show the list of users to import.
 if ($listofusers) {
     echo $restorecontroller->display_userlist($listofusers);
+} else {
+    // Display the courses.
+    if (!empty($data)) {
+        echo html_writer::tag('h2', 'Available source courses');
+        echo html_writer::tag('i', 'Source: ' . $rbp->remotesite);
+        echo html_writer::alist($data);
+    }
+
+    // Show the search form.
+    $mform = new search_form();
+    if (!$mform->is_cancelled()) {
+        $toform = new stdClass();
+        $toform->id = $id;
+        $mform->set_data($toform);
+        $mform->display();
+    }
 }
-
-
 
 echo $OUTPUT->footer();
