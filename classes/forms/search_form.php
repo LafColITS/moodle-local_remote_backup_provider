@@ -24,6 +24,8 @@
 namespace local_remote_backup_provider\forms;
 use moodleform;
 
+require_once $CFG->libdir.'/formslib.php';
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

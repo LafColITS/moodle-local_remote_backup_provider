@@ -250,11 +250,11 @@ class local_remote_backup_provider_external extends external_api {
 
         // //now we can delete the record from our users.xml
 
-        $success = \local_remote_backup_provider\extended_restore_controller::deleteuserfromuserxml([$id], $pathtofile);
- 
+        $success = \local_remote_backup_provider\extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
+
         $result = array();
         $result['status'] = $success ? 1 : 0;
-        
+
         return $result;
     }
 

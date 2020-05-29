@@ -26,9 +26,7 @@ use restore_controller_exception;
 use restore_dbops;
 use local_remote_backup_provider\output\viewpage;
 
-use context_course;
-
-// apparently use restore_controller does not work, we have to use require_once
+// Apparently use restore_controller is not auto loaded, so use require_once.
 require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
 
 defined('MOODLE_INTERNAL') || die();
@@ -106,15 +104,17 @@ class extended_restore_controller {
     }
 
     /**
+     * Perform user precheck in order to decide how to match users from remote site with users from local site.
      *
+     * @return array
+     * @throws \backup_helper_exception
+     * @throws file_exception
+     * @throws moodle_exception
+     * @throws restore_controller_exception
      */
     public function perform_precheck() {
-        global $DB, $USER, $CFG;
+        global $USER;
 
-
-        // TODO: Delete, only for debugging!
-        $CFG->cachejs = false;
-        
         $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
         $filepath = make_backup_temp_directory($tmpid);
         if (!check_dir_exists($filepath, true, true)) {
@@ -131,117 +131,99 @@ class extended_restore_controller {
                         'contenthash' => $storedfile->get_contenthash()
                 )
         );
-        
-        $filepathold = $storedfile->get_filepath();
 
         $fp = get_file_packer('application/vnd.moodle.backup');
         $fp->extract_to_pathname($storedfile, $filepath);
         // Access user.xml in backup?
-
         $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
                 backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
-        $plan = $rc->get_plan();
-        $restoreinfo = $rc->get_info();
-
         $rc->execute_precheck();
-
         $file = $rc->get_plan()->get_basepath() . '/users.xml';
 
-        //$this->deleteuserfromuserxml([1811, 1810, 2], $rc->get_plan()->get_basepath() . '/users.xml');
-
-
         restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
+        $users = $this->return_list_of_users_to_import($rc->get_restoreid());
 
-        // $newuser = $DB->get_records('backup_ids_temp', ['backupid' => $rc->get_restoreid(), 'itemname' => 'user']);
-        // $recordtodelete = $DB->delete_records('backup_ids_temp', ['itemid' => 1810]);
-        // $recordtodelete = $DB->delete_records('backup_ids_temp', ['itemid' => 1811]);
-
-        $users = $this->return_list_of_users_to_import($USER->id, $this->rbp->id, $rc->get_restoreid());
-
-        return $this->checkandmanipulateusers($users, $rc->get_restoreid(), $restoreurl);
+        return $this->process_users($users, $rc->get_restoreid(), $restoreurl);
     }
 
+    /**
+     * Get users from temp table.
+     *
+     * @param string $restoreid
+     * @return array
+     * @throws dml_exception
+     */
+    public function return_list_of_users_to_import(string $restoreid) {
+        global $DB;
 
-    public function return_list_of_users_to_import($userid, $courseid, $restoreid) {
-
-        global $CFG, $DB;
-
-
-
-        // To return any problem found
+        // To return any problem found.
         $users = array();
-
-        // We are going to map mnethostid, so load all the available ones
-        // $mnethosts = $DB->get_records('mnet_host', array(), 'wwwroot', 'wwwroot, id');
-
-        // Calculate the context we are going to use for capability checking
-        $context = context_course::instance($courseid);
 
         // Prepare for reporting progress.
         $conditions = array('backupid' => $restoreid, 'itemname' => 'user');
 
-        // Iterate over all the included users
+        // Iterate over all the included users.
         $rs = $DB->get_recordset('backup_ids_temp', $conditions, '', 'itemid, info');
         foreach ($rs as $recuser) {
-            $user = (object)\backup_controller_dbops::decode_backup_temp_info($recuser->info);
+            $user = (object) \backup_controller_dbops::decode_backup_temp_info($recuser->info);
             $users[] = $user;
         }
-
-    return $users;
-
+        return $users;
     }
 
-    public function displaylistofusers($list) {
+    /**
+     * Hand over data to renderer.
+     *
+     * @param array $list
+     * @return string
+     */
+    public function display_userlist(array $list) {
         global $PAGE;
-
         $output = $PAGE->get_renderer('local_remote_backup_provider');
         $out = '';
         // Create the list of open games we can pass on to the renderer.
-
         $viewpage = new viewpage($list);
         $out .= $output->render_viewpage($viewpage);
-
-        //$PAGE->requires->js_call_amd('local_remote_backup_provider/list', 'init');
-
         return $out;
     }
 
-
-    private function checkandmanipulateusers($users, $restoreid, $restoreurl) {
-
+    /**
+     * Perform a user check and perform actions needed due to problems with non matching users.
+     *
+     * @param array $users
+     * @param string $restoreid
+     * @param moodle_url $restoreurl
+     * @return array
+     * @throws \coding_exception
+     * @throws dml_exception
+     */
+    private function process_users(array $users, string $restoreid, moodle_url $restoreurl) {
         global $DB, $USER, $CFG;
-
-
         $context = \context_system::instance();
         $userid = $USER->id;
 
-        // we need to know if we are allowed to create entries in db
+        // Check capability if logged in users is able to create users and see user details.
         $cancreateuser = false;
         if (has_capability('moodle/restore:createuser', $context, $userid) and
-                has_capability('moodle/restore:userinfo', $context, $userid) and
-                empty($CFG->disableusercreationonrestore)) { // Can create users
+            has_capability('moodle/restore:userinfo', $context, $userid) and
+            empty($CFG->disableusercreationonrestore)) { // Can create users
             $cancreateuser = true;
         }
 
         $list = array();
-
         foreach ($users as $user) {
-
             $existinguser = null;
-            $matchuserstring = '';
-            $classstring = '';
-            
-            // We look for troubles;
-            // if ($rec = $DB->get_record('user', array('id'=>$user->id, 'username'=>$user->username, 'mnethostid'=>$user->mnethostid))) {
 
-            // First, no troubles, clean match
-            if ($recs = $DB->get_records('user', array('username'=>$user->username, 'email'=>$user->email))) {
+            // Look for troubles;
+            // if ($rec = $DB->get_record('user', array('id'=>$user->id, 'username'=>$user->username, 'mnethostid'=>$user->mnethostid))) {
+            // First, no troubles, clean match.
+            if ($recs = $DB->get_records('user', array('username' => $user->username, 'email' => $user->email))) {
                 $matchuserstring = get_string('perfectmatch', 'local_remote_backup_provider');
-            } else if ($recs = $DB->get_records('user', array('username'=>$user->username))) {
+            } else if ($recs = $DB->get_records('user', array('username' => $user->username))) {
                 $matchuserstring = get_string('differentmail', 'local_remote_backup_provider');
-            } else if ($recs = $DB->get_records('user', array('email'=>$user->email))) {
+            } else if ($recs = $DB->get_records('user', array('email' => $user->email))) {
                 $matchuserstring = get_string('differentusername', 'local_remote_backup_provider');
-            } else if ($recs = $DB->get_records('user', array('firstname'=>$user->firstname, 'lastname'=>$user->lastname))) {
+            } else if ($recs = $DB->get_records('user', array('firstname' => $user->firstname, 'lastname' => $user->lastname))) {
                 $matchuserstring = get_string('samefirstandlastname', 'local_remote_backup_provider');
             } else {
 
@@ -251,7 +233,7 @@ class extended_restore_controller {
                 } else {
                     $matchuserstring = get_string('notallowedtocreate', 'local_remote_backup_provider');
                 }
-                
+
             }
 
             $newuser = [
@@ -269,82 +251,77 @@ class extended_restore_controller {
                 $newuser['class'] = 'table-danger';
             }
 
-
             $newuser['matchingusers'] = array();
-            
+
             if ($recs && count($recs) > 0) {
-                
-                // We run through the result of our DB Search, we might have more than one match
+
+                // Run through the result of our DB Search, we might have more than one match.
                 foreach ($recs as $rec) {
                     $existinguser = [
                         'id' => $rec->id,
-                        'username' => $this->addclassifsame($rec->username, $user->username,  $rec->id),
-                        'useremail' => $this->addclassifsame($rec->email, $user->email,  $rec->id),
-                        'firstname' => $this->addclassifsame($rec->firstname, $user->firstname,  $rec->id),
-                        'lastname' => $this->addclassifsame($rec->lastname, $user->lastname,  $rec->id),
+                        'username' => $this->modify_link_to_profile($rec->username, $user->username, $rec->id),
+                        'useremail' => $this->modify_link_to_profile($rec->email, $user->email, $rec->id),
+                        'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname, $rec->id),
+                        'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname, $rec->id),
                         'matchuser' => get_string('existinguser', 'local_remote_backup_provider'),
                     ];
-                    
-                    //we overwrite newuser with span classes to show similarities to found records
-                        $newuser['username'] = $this->addclassifsame($user->username, $rec->username,  $rec->id);
-                        $newuser['useremail'] = $this->addclassifsame($user->email, $rec->email,  $rec->id);
-                        $newuser['firstname'] = $this->addclassifsame($user->firstname, $rec->firstname,  $rec->id);
-                        $newuser['lastname'] = $this->addclassifsame($user->lastname, $rec->lastname,  $rec->id);
-                        
-                        if ($matchuserstring != null) {
-                            $newuser['class'] = 'table-danger';
-                        }
-                        
-                    array_push($newuser['matchingusers'], $existinguser);
 
+                    // Overwrite newuser with span classes to show similarities to found records.
+                    $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username, $rec->id);
+                    $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email, $rec->id);
+                    $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname, $rec->id);
+                    $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname, $rec->id);
+
+                    if ($matchuserstring != null) {
+                        $newuser['class'] = 'table-danger';
+                    }
+                    array_push($newuser['matchingusers'], $existinguser);
                 }
 
             }
-
-
-            //we add the user we have now to list
+            // Add user to array.
             $list[] = $newuser;
         }
 
         $list['users'] = $list;
         $list['restoreid'] = $restoreid;
         $list['restoreurl'] = $restoreurl;
-        
-
         return $list;
     }
 
-
-    public static function deleteuserfromuserxml(array $userids, $pathtoxml) {
-
+    /**
+     * Modify the users.xml file in the course backup.
+     *
+     * @param array $userids
+     * @param string $pathtoxml
+     * @return false|int
+     */
+    public static function delete_user_from_xml(array $userids, string $pathtoxml) {
         $contents = file_get_contents($pathtoxml);
-
         foreach ($userids as $userid) {
-
             $cutstring = strstr($contents, '<user id="'. $userid . '"');
             $cutstring = strstr($cutstring, '</user>', true);
             $contents = str_replace($cutstring . '</user>', '', $contents);
-
         }
-        
         $result = file_put_contents($pathtoxml, $contents);
-
         return $result;
     }
 
-
-
-    
-    private function addclassifsame($firststring, $secondstring, $userid) {
-
+    /**
+     * Add CSS class to link to profile if necessary.
+     *
+     * @param string $firststring
+     * @param string $secondstring
+     * @param int $userid
+     * @return string
+     */
+    private function modify_link_to_profile(string $firststring, string $secondstring, int $userid) {
         global $CFG;
-
         if (strtolower($firststring) == strtolower($secondstring)) {
             return '<a href="' . $CFG->httpswwwroot . '/user/profile.php?id=' . $userid .  '" class="text-success">' . $firststring . '</a>';
         } else {
             return $firststring;
         }
-
     }
 }
 

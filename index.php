@@ -94,7 +94,7 @@ if (!$mform->is_cancelled()) {
 
 // Show the list of users to import.
 if ($listofusers) {
-    echo $restorecontroller->displaylistofusers($listofusers);
+    echo $restorecontroller->display_userlist($listofusers);
 }
 
 

@@ -7,7 +7,6 @@
  */
 
 define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
-
     var exportTableToCSV = function ($table, filename) {
 
         var $rows = $table.find('tr:has(td)'),
@@ -95,7 +94,6 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     'useremail':optionaluserelement.data('useremail')
                 };
 
-
                 var firstuserelement = $('#rbp_userrow_'+this.id);
                 var firstuser = {
                     'id':this.id,
@@ -147,7 +145,6 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
             $('#linktodownload').click(function () {
 
                 var args = [$('#tabletoexport>table'), 'userlist.csv'];
-
                 exportTableToCSV.apply(this, args);
             });
         },
