@@ -317,21 +317,40 @@ class extended_restore_controller {
     public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname=null, $lastname=null, $useremail=null) {
         $contents = file_get_contents($pathtoxml);
 
-            // First we get our user record.
-            $cutstring = strstr($contents, '<user id="'. $userid . '"');
-            $cutstring = strstr($cutstring, '</user>', true);
+        // First we get our user record.
+        $userstring = strstr($contents, '<user id="'. $userid . '"');
+        $userstring = strstr($userstring, '</user>', true);
 
-            // Now we save the old string, as we will have to replace it
-            $newstring = $cutstring;
+        // Now we save the old string, as we will have to replace it
+        $newuserstring = $userstring;
 
-            // And we replace what we need to replace in the new string;
+        // And we replace what we need to replace in the new string;
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $username, "username");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $firstname, "firstname");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $lastname, "lastname");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "useremail");
 
-            // Finally, the new string replaces the old string;
-            $contents = str_replace($cutstring, $newstring, $contents);
+        // Finally, the new string replaces the old string;
+        $contents = str_replace($userstring, $newuserstring, $contents);
 
         $result = file_put_contents($pathtoxml, $contents);
         return $result;
     }
+
+    public function replacestringbetweentags($contents, $replacestring, $tagstring) {
+        $opentag = "<" . $tagstring . ">";
+        $closetag = "</" . $tagstring . ">";
+        $cutstring = strstr($contents, $opentag);
+        $cutstring = strstr($cutstring, $closetag, true);
+        $toreplacestring = $cutstring . $closetag;
+
+        $replacestring = $opentag . $replacestring . $closetag;
+
+        $contents = str_replace($toreplacestring, $replacestring, $contents);
+
+        return $contents;
+    }
+
 
     /**
      * Add CSS class to link to profile if necessary.

@@ -68,7 +68,7 @@
                                             data-firstname="{{firstname}}"
                                             data-lastname="{{lastname}}"
                                             data-useremail="{{useremail}}">
-                                        {{{username}}} {{{useremail}}}
+                                        Merge with: {{{username}}} {{{useremail}}}
                                     </option>
                                 {{/matchingusers}}
                             </select>
@@ -86,8 +86,18 @@
     {{#str}} nouserstoimport, local_remote_backup_provider {{/str}}
 {{/users}}
 
-<a href="" id="linktodownload">Link to download</a>
-<a href="{{{restoreurl}}}" id="continue">Continue</a>
+<div class="form-group row  fitem femptylabel">
+<div class="col-md-3 form-inline felement"></div>
+<div class="col-md-9 form-inline felement">
+<input type="submit" class="btn btn-primary" id="linktodownload" value="Export as CSV...">
+</div>
+</div>
+<div class="form-group row  fitem femptylabel">
+<div class="col-md-3 form-inline felement"></div>
+<div class="col-md-9 form-inline felement">
+<input type="submit" class="btn btn-primary" id="continue" data-href="{{{restoreurl}}}" value="Continue">
+</div>
+</div>
 
 {{#js}}
     require(['local_remote_backup_provider/list'], function($) {
