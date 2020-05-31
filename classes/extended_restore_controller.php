@@ -127,7 +127,7 @@ class extended_restore_controller {
         $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $username, "username");
         $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $firstname, "firstname");
         $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $lastname, "lastname");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "useremail");
+        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "email");
 
         // Finally, the new string replaces the old string;
         $contents = str_replace($userstring, $newuserstring, $contents);
