@@ -155,7 +155,6 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
 
                 var args = [$('#tabletoexport>table'), 'userlist.csv'];
                 exportTableToCSV.apply(this, args);
-                alert ('done');
             });
 
             $('#continue').click(function () {
