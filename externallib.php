@@ -293,8 +293,8 @@ class local_remote_backup_provider_external extends external_api {
                 'restoreid' => $restoreid,
                 'username' => $username,
                 'firstname' => $firstname,
-                'lastname' =>$lastname,
-                'useremail' =>$useremail)
+                'lastname' => $lastname,
+                'useremail' => $useremail)
         );
 
         // We need the restore controller, to get the path of our backup.

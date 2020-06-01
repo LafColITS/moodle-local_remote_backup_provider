@@ -51,3 +51,5 @@ $string['nomatch'] = 'No match, create as a new user';
 $string['existinguser'] = 'User already in our DB';
 $string['samefirstandlastname'] = 'Same first and lastname';
 $string['createasnew'] = 'Create user as new user.';
+$string['mergewith'] = 'Merge with:';
+$string['exportascsv'] = 'Export as CSV... :';

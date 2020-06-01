@@ -30,10 +30,11 @@ use restore_controller;
 use restore_controller_exception;
 use restore_dbops;
 
+defined('MOODLE_INTERNAL') || die();
+
 // Apparently use restore_controller is not auto loaded, so use require_once.
 require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class restore_controller.
@@ -124,10 +125,10 @@ class extended_restore_controller {
         $newuserstring = $userstring;
 
         // And we replace what we need to replace in the new string;
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $username, "username");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $firstname, "firstname");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $lastname, "lastname");
-        $newuserstring = extended_restore_controller::replacestringbetweentags($newuserstring, $useremail, "email");
+        $newuserstring = self::replacestringbetweentags($newuserstring, $username, "username");
+        $newuserstring = self::replacestringbetweentags($newuserstring, $firstname, "firstname");
+        $newuserstring = self::replacestringbetweentags($newuserstring, $lastname, "lastname");
+        $newuserstring = self::replacestringbetweentags($newuserstring, $useremail, "email");
 
         // Finally, the new string replaces the old string;
         $contents = str_replace($userstring, $newuserstring, $contents);
@@ -276,7 +277,7 @@ class extended_restore_controller {
                 $matchuserstring = get_string('samefirstandlastname', 'local_remote_backup_provider');
             } else {
 
-                //if you are allowed to create a new user, this will be green, else it will be red
+                // If you are allowed to create a new user, this will be green, else it will be red.
                 if ($cancreateuser) {
                     $matchuserstring = get_string('createasnew', 'local_remote_backup_provider');
                 } else {
@@ -350,7 +351,6 @@ class extended_restore_controller {
         global $CFG;
         if (strtolower($firststring) == strtolower($secondstring)) {
             return $firststring;
-            //return '<a href="' . $CFG->httpswwwroot . '/user/profile.php?id=' . $userid .  '" class="text-success">' . $firststring . '</a>';
         } else {
             return $firststring;
         }

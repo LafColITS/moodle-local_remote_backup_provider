@@ -12,17 +12,33 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_mooduell/viewpage
-    Template which defines a mooduell view page.
-    Classes required for JS:
-    * none
-    Data attributes required for JS:
-    * none
-    Context variables required for this template:
-    * headings - array: An array of table headings.
-    * rows - array: An array of content rows for the table.
-    
-    }}
+    @template local_remote_backup_provider
+
+    This template renders the user list
+
+    Example context (json):
+    {
+        "restoreid": "23232323",
+        "restoreurl": "restore.php",
+        "users": [
+            {
+                "username": "sigim",
+                "firstname": "Sigrid",
+                "lastname": "Meier",
+                "useremail": "info@example.com",
+                "natchuser": "perfect match",
+                "matchingusers": [
+                    {
+                        "username": "hansm",
+                        "firstname": "Hans",
+                        "lastname": "Meier",
+                        "useremail": "hm@example.com"
+                    }
+                ]
+            }
+        ]
+    }
+}}
 <h2>{{#str}} userstoimport, local_remote_backup_provider {{/str}}</h2>
 <div id="tabletoexport" data-restoreid="{{{restoreid}}}">
     <table class="generaltable fullwidth fieldslist">
@@ -49,7 +65,7 @@
                 <td class="includeincsv">{{{lastname}}}</td>
                 <td class="includeincsv">{{{useremail}}}</td>
                 <td class="includeincsv">{{matchuser}}
-                {{^matchuser}}
+                    {{^matchuser}}
                         {{#str}} perfectmatch, local_remote_backup_provider {{/str}}
                     {{/matchuser}}</td>
                 <td class="text-right">{{^matchuser}}
@@ -59,8 +75,9 @@
                 {{/matchuser}}
                     {{#matchuser}}
                         <div class="form-group">
+                            <label for="{{id}}"></label>
                             <select class="form-control rbp_dropdown" id="{{id}}">
-                                <option class="blankvalue">Create as new user...</option>
+                                <option class="blankvalue">{{#str}} createasnew, local_remote_backup_provider {{/str}}</option>
                                 {{#matchingusers}}
                                     <option class="optionvalue"
                                             value="{{id}}"
@@ -68,7 +85,7 @@
                                             data-firstname="{{firstname}}"
                                             data-lastname="{{lastname}}"
                                             data-useremail="{{useremail}}">
-                                        Merge with: {{{username}}} {{{useremail}}}
+                                        {{#str}} mergewith, local_remote_backup_provider {{/str}} {{{username}}} {{{useremail}}}
                                     </option>
                                 {{/matchingusers}}
                             </select>
@@ -87,16 +104,16 @@
 {{/users}}
 
 <div class="form-group row  fitem femptylabel">
-<div class="col-md-3 form-inline felement"></div>
-<div class="col-md-9 form-inline felement">
-    <a href="" id="linktodownload" class="btn btn-primary">Export as CSV...</a>
-</div>
+    <div class="col-md-3 form-inline felement"></div>
+    <div class="col-md-9 form-inline felement">
+        <a href="" id="linktodownload" class="btn btn-primary">{{#str}} exportascsv, local_remote_backup_provider {{/str}}</a>
+    </div>
 </div>
 <div class="form-group row  fitem femptylabel">
-<div class="col-md-3 form-inline felement"></div>
-<div class="col-md-9 form-inline felement">
-<input type="submit" class="btn btn-primary" id="continue" data-href="{{{restoreurl}}}" value="Continue">
-</div>
+    <div class="col-md-3 form-inline felement"></div>
+    <div class="col-md-9 form-inline felement">
+        <input type="submit" class="btn btn-primary" id="continue" data-href="{{{restoreurl}}}" value="{{#str}} continue, core {{/str}}">
+    </div>
 </div>
 
 {{#js}}
