@@ -205,7 +205,7 @@ class extended_restore_controller {
         $rc->execute_precheck();
         $file = $rc->get_plan()->get_basepath() . '/users.xml';
 
-        restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
+        // restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file, $rc->get_progress());
         $users = $this->return_list_of_users_to_import($rc->get_restoreid());
 
         return $this->process_users($users, $rc->get_restoreid(), $restoreurl);
