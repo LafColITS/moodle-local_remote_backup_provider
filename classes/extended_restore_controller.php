@@ -21,6 +21,7 @@ use backup_helper_exception;
 use coding_exception;
 use context_system;
 use dml_exception;
+use DOMDocument;
 use file_exception;
 use file_storage;
 use local_remote_backup_provider\output\viewpage;
@@ -34,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
 
 // Apparently use restore_controller is not auto loaded, so use require_once.
 require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
-
 
 /**
  * Class restore_controller.
@@ -96,12 +96,22 @@ class extended_restore_controller {
      * @return false|int
      */
     public static function delete_user_from_xml(array $userids, string $pathtoxml) {
-        $contents = file_get_contents($pathtoxml);
+
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->load($pathtoxml);
         foreach ($userids as $userid) {
-            $cutstring = strstr($contents, '<user id="' . $userid . '"');
-            $cutstring = strstr($cutstring, '</user>', true);
-            $contents = str_replace($cutstring . '</user>', '', $contents);
+            $user = $dom->getElementById((string) $userid);
+            $users = $dom->getElementsByTagName('user');
+
+            foreach ($users as $user) {
+                if ($user->getAttribute('id') == $userid) {
+                    $parent = $user->parentNode;
+                    $parent->removeChild($user);
+                }
+            }
         }
+        $contents = $dom->saveXML();
+
         $result = file_put_contents($pathtoxml, $contents);
         return $result;
     }
@@ -115,40 +125,28 @@ class extended_restore_controller {
      */
     public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname = null,
             $lastname = null, $useremail = null) {
-        $contents = file_get_contents($pathtoxml);
 
-        // First we get our user record.
-        $userstring = strstr($contents, '<user id="' . $userid . '"');
-        $userstring = strstr($userstring, '</user>', true);
 
-        // Now we save the old string, as we will have to replace it
-        $newuserstring = $userstring;
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->load($pathtoxml);
 
-        // And we replace what we need to replace in the new string;
-        $newuserstring = self::replacestringbetweentags($newuserstring, $username, "username");
-        $newuserstring = self::replacestringbetweentags($newuserstring, $firstname, "firstname");
-        $newuserstring = self::replacestringbetweentags($newuserstring, $lastname, "lastname");
-        $newuserstring = self::replacestringbetweentags($newuserstring, $useremail, "email");
+        $users = $dom->getElementsByTagName('user');
 
-        // Finally, the new string replaces the old string;
-        $contents = str_replace($userstring, $newuserstring, $contents);
+        foreach ($users as $user) {
+            if ($user->getAttribute('id') == $userid) {
+
+                $user->getElementsByTagName('username')[0]->nodeValue = $username;
+                $user->getElementsByTagName('firstname')[0]->nodeValue = $firstname;
+                $user->getElementsByTagName('lastname')[0]->nodeValue = $lastname;
+                $user->getElementsByTagName('email')[0]->nodeValue = $useremail;
+
+            }
+        }
+
+        $contents = $dom->saveXML();
 
         $result = file_put_contents($pathtoxml, $contents);
         return $result;
-    }
-
-    public function replacestringbetweentags($contents, $replacestring, $tagstring) {
-        $opentag = "<" . $tagstring . ">";
-        $closetag = "</" . $tagstring . ">";
-        $cutstring = strstr($contents, $opentag);
-        $cutstring = strstr($cutstring, $closetag, true);
-        $toreplacestring = $cutstring . $closetag;
-
-        $replacestring = $opentag . $replacestring . $closetag;
-
-        $contents = str_replace($toreplacestring, $replacestring, $contents);
-
-        return $contents;
     }
 
     /**
