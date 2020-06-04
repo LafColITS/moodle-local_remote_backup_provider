@@ -119,14 +119,16 @@ class extended_restore_controller {
     /**
      * Modify the users.xml file in the course backup.
      *
-     * @param array $userids
+     * @param int $userid
      * @param string $pathtoxml
+     * @param string $username
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $useremail
      * @return false|int
      */
-    public static function update_user_from_xml(int $userid, string $pathtoxml, $username = null, $firstname = null,
-            $lastname = null, $useremail = null) {
-
-
+    public static function update_user_from_xml(int $userid, string $pathtoxml, string $username = '', string $firstname = '',
+            $lastname = '', $useremail = '') {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load($pathtoxml);
 
@@ -134,19 +136,15 @@ class extended_restore_controller {
 
         foreach ($users as $user) {
             if ($user->getAttribute('id') == $userid) {
-
                 $user->getElementsByTagName('username')[0]->nodeValue = $username;
                 $user->getElementsByTagName('firstname')[0]->nodeValue = $firstname;
                 $user->getElementsByTagName('lastname')[0]->nodeValue = $lastname;
                 $user->getElementsByTagName('email')[0]->nodeValue = $useremail;
-
             }
         }
 
         $contents = $dom->saveXML();
-
-        $result = file_put_contents($pathtoxml, $contents);
-        return $result;
+        return file_put_contents($pathtoxml, $contents);
     }
 
     /**
@@ -252,19 +250,16 @@ class extended_restore_controller {
 
         // Check capability if logged in users is able to create users and see user details.
         $cancreateuser = false;
-        if (has_capability('moodle/restore:createuser', $context, $userid) and
-                has_capability('moodle/restore:userinfo', $context, $userid) and
-                empty($CFG->disableusercreationonrestore)) { // Can create users
+        if (has_capability('moodle/restore:createuser', $context, $userid) &&
+                has_capability('moodle/restore:userinfo', $context, $userid) &&
+                empty($CFG->disableusercreationonrestore)) { // Can create users.
             $cancreateuser = true;
         }
 
         $list = array();
         foreach ($users as $user) {
             $existinguser = null;
-
-            // Look for troubles;
-            // if ($rec = $DB->get_record('user', array('id'=>$user->id, 'username'=>$user->username, 'mnethostid'=>$user->mnethostid))) {
-            // First, no troubles, clean match.
+            // Look for troubles. First, no troubles, clean match.
             if ($recs = $DB->get_records('user', array('username' => $user->username, 'email' => $user->email))) {
                 $matchuserstring = null;
             } else if ($recs = $DB->get_records('user', array('username' => $user->username))) {
@@ -307,18 +302,18 @@ class extended_restore_controller {
                 foreach ($recs as $rec) {
                     $existinguser = [
                             'id' => $rec->id,
-                            'username' => $this->modify_link_to_profile($rec->username, $user->username, $rec->id),
-                            'useremail' => $this->modify_link_to_profile($rec->email, $user->email, $rec->id),
-                            'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname, $rec->id),
-                            'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname, $rec->id),
+                            'username' => $this->modify_link_to_profile($rec->username, $user->username),
+                            'useremail' => $this->modify_link_to_profile($rec->email, $user->email),
+                            'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname),
+                            'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname),
                             'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
                     ];
 
                     // Overwrite newuser with span classes to show similarities to found records.
-                    $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username, $rec->id);
-                    $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email, $rec->id);
-                    $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname, $rec->id);
-                    $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname, $rec->id);
+                    $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username);
+                    $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email);
+                    $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname);
+                    $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname);
 
                     if ($matchuserstring != null) {
                         $newuser['class'] = 'table-danger';
@@ -342,11 +337,9 @@ class extended_restore_controller {
      *
      * @param string $firststring
      * @param string $secondstring
-     * @param int $userid
      * @return string
      */
-    private function modify_link_to_profile(string $firststring, string $secondstring, int $userid) {
-        global $CFG;
+    private function modify_link_to_profile(string $firststring, string $secondstring) {
         if (strtolower($firststring) == strtolower($secondstring)) {
             return $firststring;
         } else {

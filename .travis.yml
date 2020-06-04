@@ -3,9 +3,6 @@ language: php
 addons:
   postgresql: "9.5"
   firefox: "68.8.0"
-  apt:
-    packages:
-      - openjdk-8-jre-headless
 
 cache:
   directories:

@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/externallib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
-// apparently use restore_controller does not work, we have to use require_once
+// Apparently use restore_controller does not work, we have to use require_once.
 require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
 
 /**
@@ -204,40 +204,32 @@ class local_remote_backup_provider_external extends external_api {
     public static function get_course_backup_by_id_returns() {
         return new external_single_structure(
                 array(
-                        'url' => new external_value(PARAM_RAW, 'url of the backup file'),
+                        'url' => new external_value(PARAM_URL, 'url of the backup file'),
                 )
         );
     }
 
     /**
-     * Delete record from our users.xml in our backup
+     * Delete record from our users.xml in our backup.
      *
-     *
-     * @param int $id the course id
-     * @return array|bool An array containing the status
+     * @param int $id
+     * @param string $restoreid
+     * @return array
+     * @throws invalid_parameter_exception
      */
-    public static function delete_user_entry_from_backup_by_id($id, $restoreid) {
-
-        global $USER, $CFG;
-
+    public static function delete_user_entry_from_backup_by_id(int $id, string $restoreid) {
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
                 self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id, 'restoreid' => $restoreid)
         );
 
         // We need the restore controller, to get the path of our backup.
-        $rc = restore_controller::load_controller($restoreid);
-
+        $rc = restore_controller::load_controller($params['restoreid']);
         $basepath = $rc->get_plan()->get_basepath();
-
-        $plan = $rc->get_plan();
-
         $pathtofile = $basepath . '/users.xml';
 
-        // //now we can delete the record from our users.xml
-
-        $success = extended_restore_controller::delete_user_from_xml([$id], $pathtofile);
-
+        // Delete the record from our users.xml.
+        $success = extended_restore_controller::delete_user_from_xml([$params['id']], $pathtofile);
         $result = array();
         $result['status'] = $success ? 1 : 0;
 
@@ -253,7 +245,7 @@ class local_remote_backup_provider_external extends external_api {
         return new external_function_parameters(
                 array(
                         'id' => new external_value(PARAM_INT, 'id'),
-                        'restoreid' => new external_value(PARAM_RAW, 'restoreid')
+                        'restoreid' => new external_value(PARAM_ALPHANUMEXT, 'restoreid')
                 )
         );
     }
@@ -272,10 +264,10 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     *
      * Update our users.xml in our backup
-     * @param $id
-     * @param $restoreid
+     *
+     * @param $id course id
+     * @param $restoreid restore controller id
      * @param $username
      * @param $firstname
      * @param $lastname
@@ -283,9 +275,8 @@ class local_remote_backup_provider_external extends external_api {
      * @return array
      * @throws invalid_parameter_exception
      */
-    public static function update_user_entry_in_backup($id, $restoreid, $username, $firstname, $lastname, $useremail) {
-
-        global $USER, $CFG;
+    public static function update_user_entry_in_backup(int $id, string $restoreid, string $username, string $firstname,
+        string $lastname, string $useremail) {
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
@@ -298,21 +289,15 @@ class local_remote_backup_provider_external extends external_api {
         );
 
         // We need the restore controller, to get the path of our backup.
-        $rc = restore_controller::load_controller($restoreid);
-
+        $rc = restore_controller::load_controller($params['restoreid']);
         $basepath = $rc->get_plan()->get_basepath();
-
-        $plan = $rc->get_plan();
-
         $pathtofile = $basepath . '/users.xml';
 
-        // //now we can delete the record from our users.xml
-
-        $success = extended_restore_controller::update_user_from_xml($id, $pathtofile, $username, $firstname, $lastname, $useremail);
-
+        // Delete the record from our users.xml.
+        $success = extended_restore_controller::update_user_from_xml($params['id'], $pathtofile, $params['username'],
+            $params['firstname'], $params['lastname'], $params['useremail']);
         $result = array();
         $result['status'] = $success ? 1 : 0;
-
         return $result;
     }
 
@@ -325,11 +310,11 @@ class local_remote_backup_provider_external extends external_api {
         return new external_function_parameters(
                 array(
                         'id' => new external_value(PARAM_INT, 'id'),
-                        'restoreid' => new external_value(PARAM_RAW, 'restoreid'),
+                        'restoreid' => new external_value(PARAM_ALPHANUMEXT, 'restoreid'),
                         'username' => new external_value(PARAM_RAW, 'username'),
                         'firstname' => new external_value(PARAM_RAW, 'firstname'),
                         'lastname' => new external_value(PARAM_RAW, 'lastname'),
-                        'useremail' => new external_value(PARAM_RAW, 'useremail'),
+                        'useremail' => new external_value(PARAM_EMAIL, 'useremail'),
                 )
         );
     }
