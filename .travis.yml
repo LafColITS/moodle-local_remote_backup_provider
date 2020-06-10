@@ -13,7 +13,6 @@ services:
   - mysql
 
 env:
-  - JDK=openjdk8
   matrix:
     - DB=pgsql MOODLE_BRANCH=MOODLE_35_STABLE
     - DB=pgsql MOODLE_BRANCH=MOODLE_37_STABLE
@@ -51,7 +50,6 @@ before_install:
   - composer selfupdate
   - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
-  - jdk_switcher use $JDK
 
 install:
   - moodle-plugin-ci install
