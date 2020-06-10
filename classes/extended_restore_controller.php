@@ -54,16 +54,6 @@ class extended_restore_controller {
     public $remotecourse;
 
     /**
-     * @var file_storage
-     */
-    public $fs;
-
-    /**
-     * @var array
-     */
-    public $filerecord;
-
-    /**
      * @param remote_backup_provider $rbp
      * @param int $remote
      * @throws dml_exception
@@ -215,7 +205,7 @@ class extended_restore_controller {
      * @return array
      * @throws dml_exception
      */
-    public function return_list_of_users_to_import(string $restoreid) {
+    private function return_list_of_users_to_import(string $restoreid) {
         global $DB;
 
         // To return any problem found.
