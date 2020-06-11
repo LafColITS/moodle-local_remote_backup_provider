@@ -300,42 +300,20 @@ class extended_restore_controller {
             foreach ($recs as $rec) {
                 $existinguser = [
                         'id' => $rec->id,
-                        'username' => $this->modify_link_to_profile($rec->username, $user->username),
-                        'useremail' => $this->modify_link_to_profile($rec->email, $user->email),
-                        'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname),
-                        'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname),
+                        'username' => $rec->username,
+                        'useremail' => $rec->email,
+                        'firstname' => $rec->firstname,
+                        'lastname' => $rec->lastname,
                         'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
                 ];
 
-                // Overwrite newuser with span classes to show similarities to found records.
-                $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username);
-                $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email);
-                $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname);
-                $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname);
-
-                if ($matchuserstring != null) {
+                if ($newuser['matchuser'] != null) {
                     $newuser['class'] = 'table-danger';
                 }
                 array_push($newuser['matchingusers'], $existinguser);
             }
         }
         return $newuser;
-    }
-
-    /**
-     * Add CSS class to link to profile if necessary.
-     *
-     * @param string $firststring
-     * @param string $secondstring
-     * @return string
-     */
-    private
-    function modify_link_to_profile(string $firststring, string $secondstring) {
-        if (strtolower($firststring) == strtolower($secondstring)) {
-            return $firststring;
-        } else {
-            return $firststring;
-        }
     }
 
     /**
