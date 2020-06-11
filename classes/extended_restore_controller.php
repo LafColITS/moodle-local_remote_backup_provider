@@ -284,7 +284,7 @@ class extended_restore_controller {
             }
 
             // Add user to array.
-            $list[] = this.$this->addExistingUsersToNewUser($newuser, $recs);
+            $list[] = $this->add_existing_users_to_newuser($newuser, $recs);
         }
 
         $list['users'] = $list;
@@ -293,7 +293,7 @@ class extended_restore_controller {
         return $list;
     }
 
-    private function addExistingUsersToNewUser($newuser, $recs) {
+    private function add_existing_users_to_newuser($newuser, $recs) {
         $newuser['matchingusers'] = array();
         if ($recs && count($recs) > 0) {
             // Run through the result of our DB Search, we might have more than one match.
