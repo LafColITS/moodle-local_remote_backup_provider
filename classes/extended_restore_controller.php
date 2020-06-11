@@ -23,7 +23,6 @@ use context_system;
 use dml_exception;
 use DOMDocument;
 use file_exception;
-use file_storage;
 use local_remote_backup_provider\output\viewpage;
 use moodle_exception;
 use moodle_url;
@@ -284,42 +283,43 @@ class extended_restore_controller {
                 $newuser['class'] = 'table-danger';
             }
 
-            $newuser['matchingusers'] = array();
-
-            if ($recs && count($recs) > 0) {
-
-                // Run through the result of our DB Search, we might have more than one match.
-                foreach ($recs as $rec) {
-                    $existinguser = [
-                            'id' => $rec->id,
-                            'username' => $this->modify_link_to_profile($rec->username, $user->username),
-                            'useremail' => $this->modify_link_to_profile($rec->email, $user->email),
-                            'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname),
-                            'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname),
-                            'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
-                    ];
-
-                    // Overwrite newuser with span classes to show similarities to found records.
-                    $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username);
-                    $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email);
-                    $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname);
-                    $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname);
-
-                    if ($matchuserstring != null) {
-                        $newuser['class'] = 'table-danger';
-                    }
-                    array_push($newuser['matchingusers'], $existinguser);
-                }
-
-            }
             // Add user to array.
-            $list[] = $newuser;
+            $list[] = this.$this->addExistingUsersToNewUser($newuser, $recs);
         }
 
         $list['users'] = $list;
         $list['restoreid'] = $restoreid;
         $list['restoreurl'] = $restoreurl;
         return $list;
+    }
+
+    private function addExistingUsersToNewUser($newuser, $recs) {
+        $newuser['matchingusers'] = array();
+        if ($recs && count($recs) > 0) {
+            // Run through the result of our DB Search, we might have more than one match.
+            foreach ($recs as $rec) {
+                $existinguser = [
+                        'id' => $rec->id,
+                        'username' => $this->modify_link_to_profile($rec->username, $user->username),
+                        'useremail' => $this->modify_link_to_profile($rec->email, $user->email),
+                        'firstname' => $this->modify_link_to_profile($rec->firstname, $user->firstname),
+                        'lastname' => $this->modify_link_to_profile($rec->lastname, $user->lastname),
+                        'matchuser' => get_string('existinguser', 'local_remote_backup_provider')
+                ];
+
+                // Overwrite newuser with span classes to show similarities to found records.
+                $newuser['username'] = $this->modify_link_to_profile($user->username, $rec->username);
+                $newuser['useremail'] = $this->modify_link_to_profile($user->email, $rec->email);
+                $newuser['firstname'] = $this->modify_link_to_profile($user->firstname, $rec->firstname);
+                $newuser['lastname'] = $this->modify_link_to_profile($user->lastname, $rec->lastname);
+
+                if ($matchuserstring != null) {
+                    $newuser['class'] = 'table-danger';
+                }
+                array_push($newuser['matchingusers'], $existinguser);
+            }
+        }
+        return $newuser;
     }
 
     /**
@@ -329,7 +329,8 @@ class extended_restore_controller {
      * @param string $secondstring
      * @return string
      */
-    private function modify_link_to_profile(string $firststring, string $secondstring) {
+    private
+    function modify_link_to_profile(string $firststring, string $secondstring) {
         if (strtolower($firststring) == strtolower($secondstring)) {
             return $firststring;
         } else {

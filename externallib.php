@@ -350,7 +350,7 @@ class local_remote_backup_provider_external extends external_api {
         );
 
         // We need the restore controller, to get the path of our backup.
-        $rc = restore_controller::load_controller($restoreid);
+        $rc = restore_controller::load_controller($params['$restoreid']);
 
         $basepath = $rc->get_plan()->get_basepath();
 
