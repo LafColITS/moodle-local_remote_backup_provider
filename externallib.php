@@ -354,20 +354,20 @@ class local_remote_backup_provider_external extends external_api {
 
         $basepath = $rc->get_plan()->get_basepath();
 
-        // Get the list of files in directory
+        // Get the list of files in directory.
         $filestemp = get_directory_list($basepath, '', false, true, true);
         $files = array();
         foreach ($filestemp as $file) { // Add zip paths and fs paths to all them
             $files[$file] = $basepath . '/' . $file;
         }
 
-        // Calculate the zip fullpath (in OS temp area it's always backup.mbz)
+        // Calculate the zip fullpath (in OS temp area it's always backup.mbz).
         $zipfile = $CFG->backuptempdir . '/updated_backup.mbz';
 
-        // Get the zip packer
+        // Get the zip packer.
         $zippacker = get_file_packer('application/vnd.moodle.backup');
 
-        // Zip files
+        // Zip files.
         $success = $zippacker->archive_to_pathname($files, $zipfile, true);
 
         $result = array();

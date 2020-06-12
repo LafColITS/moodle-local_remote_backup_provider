@@ -154,7 +154,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
             $('#linktodownload').click(function () {
 
                 //get the coursename for name of csv file
-                var coursename = $('.page-header-headings').first().text();
+                var coursename = $('#remote_course_name').text();
                 var args = [$('#tabletoexport>table'), 'userlist_import_'+coursename+'.csv'];
                 exportTableToCSV.apply(this, args);
             });

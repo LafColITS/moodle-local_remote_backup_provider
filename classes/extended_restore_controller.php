@@ -194,7 +194,10 @@ class extended_restore_controller {
         restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file, $rc->get_progress());
         $users = $this->return_list_of_users_to_import($rc->get_restoreid());
 
-        return $this->process_users($users, $rc->get_restoreid(), $restoreurl);
+        $list = $this->process_users($users, $rc->get_restoreid(), $restoreurl);
+        $list['coursename'] = $this->get_course_name_from_backup($rc->get_plan()->get_basepath() . '/course/course.xml');
+
+        return $list;
     }
 
     /**
@@ -314,6 +317,18 @@ class extended_restore_controller {
             }
         }
         return $newuser;
+    }
+
+    /**
+     * function to return coursname, found in the course.xml file which ist part of the backup bundle
+     * @param string $pathtoxml path to course.xml file in our extracted backup found in the temp directory
+     * @return string cousename
+     */
+    private function get_course_name_from_backup(string $pathtoxml):string {
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->load($pathtoxml);
+        $coursename = $dom->getElementsByTagName('fullname')->item(0)->nodeValue;
+        return $coursename;
     }
 
     /**
