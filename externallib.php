@@ -356,7 +356,7 @@ class local_remote_backup_provider_external extends external_api {
         // Get the list of files in directory.
         $filestemp = get_directory_list($basepath, '', false, true, true);
         $files = array();
-        foreach ($filestemp as $file) { // Add zip paths and fs paths to all them
+        foreach ($filestemp as $file) { // Add zip paths and fs paths to all them.
             $files[$file] = $basepath . '/' . $file;
         }
 

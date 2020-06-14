@@ -250,7 +250,6 @@ class extended_restore_controller {
 
         $list = array();
         foreach ($users as $user) {
-            $existinguser = null;
             // Look for troubles. First, no troubles, clean match.
             if ($recs = $DB->get_records('user', array('username' => $user->username, 'email' => $user->email))) {
                 $matchuserstring = null;
@@ -347,6 +346,3 @@ class extended_restore_controller {
         return $out;
     }
 }
-
-
-
