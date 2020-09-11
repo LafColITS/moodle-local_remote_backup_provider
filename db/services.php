@@ -43,7 +43,7 @@ $functions = array(
         ),
         'local_remote_backup_provider_delete_user_entry_from_backup' => array(
                 'classname' => 'local_remote_backup_provider_external',
-                'methodname' => 'delete_user_entry_from_backup_by_id',
+                'methodname' => 'delete_user_entry_from_backup',
                 'classpath' => 'local/remote_backup_provider/externallib.php',
                 'description' => 'Delete a user by id from the users.xml in the backup we will import',
                 'type' => 'write',

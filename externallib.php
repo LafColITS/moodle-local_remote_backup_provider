@@ -217,10 +217,10 @@ class local_remote_backup_provider_external extends external_api {
      * @return array
      * @throws invalid_parameter_exception
      */
-    public static function delete_user_entry_from_backup_by_id(int $id, string $restoreid) {
+    public static function delete_user_entry_from_backup(int $id, string $restoreid): array {
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
-                self::delete_user_entry_from_backup_by_id_parameters(), array('id' => $id, 'restoreid' => $restoreid)
+                self::delete_user_entry_from_backup_parameters(), array('id' => $id, 'restoreid' => $restoreid)
         );
 
         // We need the restore controller, to get the path of our backup.
@@ -237,11 +237,11 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     * Parameter description for delete_user_entry_from_backup_by_id().
+     * Parameter description for delete_user_entry_from_backup().
      *
      * @return external_function_parameters
      */
-    public static function delete_user_entry_from_backup_by_id_parameters() {
+    public static function delete_user_entry_from_backup_parameters(): \external_function_parameters {
         return new external_function_parameters(
                 array(
                         'id' => new external_value(PARAM_INT, 'id'),
@@ -251,11 +251,11 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     * Parameter description for delete_user_entry_from_backup_by_id().
+     * Parameter description for delete_user_entry_from_backup().
      *
      * @return external_description
      */
-    public static function delete_user_entry_from_backup_by_id_returns() {
+    public static function delete_user_entry_from_backup_returns() {
         return new external_single_structure(
                 array(
                         'status' => new external_value(PARAM_INT, '0 is false, 1 is true'),
@@ -320,7 +320,7 @@ class local_remote_backup_provider_external extends external_api {
     }
 
     /**
-     * Parameter description for delete_user_entry_from_backup_by_id().
+     * Parameter description for delete_user_entry_from_backup().
      *
      * @return external_description
      */
