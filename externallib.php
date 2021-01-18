@@ -360,8 +360,12 @@ class local_remote_backup_provider_external extends external_api {
             $files[$file] = $basepath . '/' . $file;
         }
 
+        $filepath = make_backup_temp_directory($restoreid);
+        if (!check_dir_exists($filepath, true, true)) {
+            throw new restore_controller_exception('cannot_create_backup_temp_dir');
+        }
         // Calculate the zip fullpath (in OS temp area it's always backup.mbz).
-        $zipfile = $CFG->backuptempdir . '/updated_backup.mbz';
+        $zipfile = $filepath . '/updated_backup.mbz';
 
         // Get the zip packer.
         $zippacker = get_file_packer('application/vnd.moodle.backup');

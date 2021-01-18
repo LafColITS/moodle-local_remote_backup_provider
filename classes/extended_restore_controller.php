@@ -166,7 +166,7 @@ class extended_restore_controller {
      * @throws restore_controller_exception
      */
     public function perform_precheck() {
-        global $USER;
+        global $USER, $OUTPUT, $PAGE;
 
         $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
         $filepath = make_backup_temp_directory($tmpid);
@@ -189,6 +189,17 @@ class extended_restore_controller {
         $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
                 backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
         $rc->execute_precheck();
+        $results = $rc->get_precheck_results();
+        // Check if errors have been found.
+        if (!empty($results['errors'])) {
+            echo $OUTPUT->header();
+            $backuprenderer = $PAGE->get_renderer('core', 'backup');
+            echo $backuprenderer->precheck_notices($results);
+            echo $OUTPUT->continue_button($restoreurl);
+            echo $OUTPUT->footer();
+            exit();
+        }
+
         $file = $rc->get_plan()->get_basepath() . '/users.xml';
 
         restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file, $rc->get_progress());
