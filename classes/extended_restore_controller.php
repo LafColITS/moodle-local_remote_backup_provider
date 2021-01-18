@@ -27,8 +27,11 @@ use local_remote_backup_provider\output\viewpage;
 use moodle_exception;
 use moodle_url;
 use restore_controller;
+use restore_controller_dbops;
 use restore_controller_exception;
 use restore_dbops;
+use restore_root_task;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -166,7 +169,7 @@ class extended_restore_controller {
      * @throws restore_controller_exception
      */
     public function perform_precheck() {
-        global $USER, $OUTPUT, $PAGE;
+        global $USER, $PAGE;
 
         $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
         $filepath = make_backup_temp_directory($tmpid);
@@ -176,6 +179,9 @@ class extended_restore_controller {
 
         $storedfile = $this->fs->create_file_from_url($this->filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token,
                 null, true);
+        if ($storedfile->get_filesize() <= 0) {
+            throw new coding_exception('The backup file does not exist. It was either not transferred or access is not possible');
+        }
 
         $restoreurl = new moodle_url('/backup/restore.php',
                 array(
@@ -188,23 +194,11 @@ class extended_restore_controller {
         // Access user.xml in backup?
         $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
                 backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
-        $rc->execute_precheck();
-        $results = $rc->get_precheck_results();
-        // Check if errors have been found.
-        if (!empty($results['errors'])) {
-            echo $OUTPUT->header();
-            $backuprenderer = $PAGE->get_renderer('core', 'backup');
-            echo $backuprenderer->precheck_notices($results);
-            echo $OUTPUT->continue_button($restoreurl);
-            echo $OUTPUT->footer();
-            exit();
-        }
-
+        self::execute_prechecks($rc);
         $file = $rc->get_plan()->get_basepath() . '/users.xml';
 
-        restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file, $rc->get_progress());
+        restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
         $users = $this->return_list_of_users_to_import($rc->get_restoreid());
-
         $list = $this->process_users($users, $rc->get_restoreid(), $restoreurl);
         $list['coursename'] = $this->get_course_name_from_backup($rc->get_plan()->get_basepath() . '/course/course.xml');
 
@@ -355,5 +349,180 @@ class extended_restore_controller {
         $viewpage = new viewpage($list);
         $out .= $output->render_viewpage($viewpage);
         return $out;
+    }
+
+    /**
+     *
+     * Checks in order to save users to temp table
+     *
+     * Returns empty array or warnings/errors array
+     * @param restore_controller $controller
+     * @param false $droptemptablesafter
+     * @return array
+     * @throws \base_plan_exception
+     * @throws \restore_dbops_exception
+     * @throws backup_helper_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public static function execute_prechecks(restore_controller $controller, $droptemptablesafter = false) {
+        global $CFG;
+
+        $errors = array();
+        $warnings = array();
+
+        // Some handy vars to be used along the prechecks
+        $samesite = $controller->is_samesite();
+        $restoreusers = $controller->get_plan()->get_setting('users')->get_value();
+        $hasmnetusers = (int)$controller->get_info()->mnet_remoteusers;
+        $restoreid = $controller->get_restoreid();
+        $courseid = $controller->get_courseid();
+        $userid = $controller->get_userid();
+        $rolemappings = $controller->get_info()->role_mappings;
+        $progress = $controller->get_progress();
+
+        // Start tracking progress. There are currently 8 major steps, corresponding
+        // to $majorstep++ lines in this code; we keep track of the total so as to
+        // verify that it's still correct. If you add a major step, you need to change
+        // the total here.
+        $majorstep = 1;
+        $majorsteps = 8;
+        $progress->start_progress('Carrying out pre-restore checks', $majorsteps);
+
+        // Load all the included tasks to look for inforef.xml files
+        $inforeffiles = array();
+        $tasks = restore_dbops::get_included_tasks($restoreid);
+        $progress->start_progress('Listing inforef files', count($tasks));
+        $minorstep = 1;
+        foreach ($tasks as $task) {
+            // Add the inforef.xml file if exists
+            $inforefpath = $task->get_taskbasepath() . '/inforef.xml';
+            if (file_exists($inforefpath)) {
+                $inforeffiles[] = $inforefpath;
+            }
+            $progress->progress($minorstep++);
+        }
+        $progress->end_progress();
+        $progress->progress($majorstep++);
+
+        // Create temp tables
+        restore_controller_dbops::create_restore_temp_tables($controller->get_restoreid());
+
+        // Check we are restoring one backup >= $min20version (very first ok ever)
+        $min20version = 2010072300;
+        if ($controller->get_info()->backup_version < $min20version) {
+            $message = new stdclass();
+            $message->backup = $controller->get_info()->backup_version;
+            $message->min    = $min20version;
+            $errors[] = get_string('errorminbackup20version', 'backup', $message);
+        }
+
+        // Compare Moodle's versions
+        if ($CFG->version < $controller->get_info()->moodle_version) {
+            $message = new stdclass();
+            $message->serverversion = $CFG->version;
+            $message->serverrelease = $CFG->release;
+            $message->backupversion = $controller->get_info()->moodle_version;
+            $message->backuprelease = $controller->get_info()->moodle_release;
+            $warnings[] = get_string('noticenewerbackup','',$message);
+        }
+
+        // The original_course_format var was introduced in Moodle 2.9.
+        $originalcourseformat = null;
+        if (!empty($controller->get_info()->original_course_format)) {
+            $originalcourseformat = $controller->get_info()->original_course_format;
+        }
+
+        // We can't restore other course's backups on the front page.
+        if ($controller->get_courseid() == SITEID &&
+            $originalcourseformat !== 'site' &&
+            $controller->get_type() == backup::TYPE_1COURSE) {
+            $errors[] = get_string('errorrestorefrontpagebackup', 'backup');
+        }
+
+        // We can't restore front pages over other courses.
+        if ($controller->get_courseid() != SITEID &&
+            $originalcourseformat === 'site' &&
+            $controller->get_type() == backup::TYPE_1COURSE) {
+            $errors[] = get_string('errorrestorefrontpagebackup', 'backup');
+        }
+
+        // If restoring to different site and restoring users and backup has mnet users warn/error
+        if (!$samesite && $restoreusers && $hasmnetusers) {
+            // User is admin (can create users at sysctx), warn
+            if (has_capability('moodle/user:create', context_system::instance(), $controller->get_userid())) {
+                $warnings[] = get_string('mnetrestore_extusers_admin', 'admin');
+                // User not admin
+            } else {
+                $errors[] = get_string('mnetrestore_extusers_noadmin', 'admin');
+            }
+        }
+
+        // Load all the inforef files, we are going to need them
+        $progress->start_progress('Loading temporary IDs', count($inforeffiles));
+        $minorstep = 1;
+        foreach ($inforeffiles as $inforeffile) {
+            // Load each inforef file to temp_ids.
+            restore_dbops::load_inforef_to_tempids($restoreid, $inforeffile, $progress);
+            $progress->progress($minorstep++);
+        }
+        $progress->end_progress();
+        $progress->progress($majorstep++);
+
+        // If restoring users, check we are able to create all them
+        if ($restoreusers) {
+            $file = $controller->get_plan()->get_basepath() . '/users.xml';
+            // Load needed users to temp_ids.
+            restore_dbops::load_users_to_tempids($restoreid, $file, $progress);
+            $progress->progress($majorstep++);
+            if ($problems = restore_dbops::precheck_included_users($restoreid, $courseid, $userid, $samesite, $progress)) {
+                $errors = array_merge($errors, $problems);
+            }
+        } else {
+            // To ensure consistent number of steps in progress tracking,
+            // mark progress even though we didn't do anything.
+            $progress->progress($majorstep++);
+        }
+        $progress->progress($majorstep++);
+
+        // Note: restore won't create roles at all. Only mapping/skip!
+        $file = $controller->get_plan()->get_basepath() . '/roles.xml';
+        restore_dbops::load_roles_to_tempids($restoreid, $file); // Load needed roles to temp_ids
+        if ($problems = restore_dbops::precheck_included_roles($restoreid, $courseid, $userid, $samesite, $rolemappings)) {
+            $errors = array_key_exists('errors', $problems) ? array_merge($errors, $problems['errors']) : $errors;
+            $warnings = array_key_exists('warnings', $problems) ? array_merge($warnings, $problems['warnings']) : $warnings;
+        }
+        $progress->progress($majorstep++);
+
+        // Check we are able to restore and the categories and questions
+        $file = $controller->get_plan()->get_basepath() . '/questions.xml';
+        restore_dbops::load_categories_and_questions_to_tempids($restoreid, $file);
+        if ($problems = restore_dbops::precheck_categories_and_questions($restoreid, $courseid, $userid, $samesite)) {
+            $errors = array_key_exists('errors', $problems) ? array_merge($errors, $problems['errors']) : $errors;
+            $warnings = array_key_exists('warnings', $problems) ? array_merge($warnings, $problems['warnings']) : $warnings;
+        }
+        $progress->progress($majorstep++);
+
+        // Prepare results.
+        $results = array();
+        if (!empty($errors)) {
+            $results['errors'] = $errors;
+        }
+        if (!empty($warnings)) {
+            $results['warnings'] = $warnings;
+        }
+        // Warnings/errors detected or want to do so explicitly, drop temp tables
+        if ($droptemptablesafter) {
+            restore_controller_dbops::drop_restore_temp_tables($controller->get_restoreid());
+        }
+
+        // Finish progress and check we got the initial number of steps right.
+        $progress->progress($majorstep++);
+        if ($majorstep != $majorsteps) {
+            throw new coding_exception('Progress step count wrong: ' . $majorstep);
+        }
+        $progress->end_progress();
+
+        return $results;
     }
 }

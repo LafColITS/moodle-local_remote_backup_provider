@@ -341,7 +341,6 @@ class local_remote_backup_provider_external extends external_api {
      * @return array|bool An array containing the status
      */
     public static function create_updated_backup($restoreid) {
-        global $CFG;
 
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
@@ -360,7 +359,7 @@ class local_remote_backup_provider_external extends external_api {
             $files[$file] = $basepath . '/' . $file;
         }
 
-        $filepath = make_backup_temp_directory($restoreid);
+        $filepath = make_backup_temp_directory('');
         if (!check_dir_exists($filepath, true, true)) {
             throw new restore_controller_exception('cannot_create_backup_temp_dir');
         }
