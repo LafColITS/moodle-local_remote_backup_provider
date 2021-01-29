@@ -29,7 +29,7 @@ use local_remote_backup_provider\forms\search_form;
 use moodle_url;
 use stdClass;
 
-require_once(dirname(__FILE__) . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
 // Remote course id.
@@ -64,11 +64,11 @@ if (!empty($search)) {
 } else if ($remote !== 0) {
     // Instantiate the restore controller, which handles the restore of the remote course.
     $restorecontroller = new extended_restore_controller($rbp, $remote);
-    if ($rbp->enableuserprecheck == false) {
+    if ($rbp->enableuserprecheck === false) {
         // Direct import without prechecks.
         $restorecontroller->import_backup_file();
     } else {
-        // Peform extended user checks and reporting.
+        // Perform extended user checks and reporting.
         $listofusers = $restorecontroller->perform_precheck();
     }
 }
@@ -90,7 +90,7 @@ if ($listofusers) {
     }
 
     // Show the search form.
-    $mform = new search_form();
+    $mform = new search_form(null, ['id' => $id]);
     if (!$mform->is_cancelled()) {
         $toform = new stdClass();
         $toform->id = $id;

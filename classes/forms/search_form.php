@@ -42,8 +42,6 @@ class search_form extends moodleform {
      * Defines the search form.
      */
     public function definition() {
-        global $CFG;
-
         $mform = $this->_form;
         $mform->addElement('text', 'search', get_string('search'));
         $mform->setType('search', PARAM_NOTAGS);
