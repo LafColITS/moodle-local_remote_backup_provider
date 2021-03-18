@@ -18,7 +18,10 @@ namespace local_remote_backup_provider;
 
 use context_course;
 use curl;
+use dml_exception;
+use moodle_exception;
 use moodle_url;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,18 +40,21 @@ class remote_backup_provider {
 
     /**
      * Token for webservice client.
+     *
      * @var string
      */
     public $token = '';
 
     /**
      * The url to the remote site.
+     *
      * @var string
      */
     public $remotesite = '';
 
     /**
      * The user attribute to match the local user with the remote user.
+     *
      * @var string
      */
     public $uniqueid = '';
@@ -60,12 +66,13 @@ class remote_backup_provider {
 
     /**
      * Enable extended user check upon course restore process.
+     *
      * @var bool
      */
     public $enableuserprecheck = false;
 
     /**
-     * @var \stdClass
+     * @var stdClass
      */
     public $course;
 
@@ -73,8 +80,8 @@ class remote_backup_provider {
      * Return param type expected for web service.
      *
      * @param int $id course id from where the remote backup provider is called
-     * @throws \dml_exception
-     * @throws \moodle_exception
+     * @throws dml_exception
+     * @throws moodle_exception
      */
     public function __construct(int $id) {
         global $DB;
@@ -111,7 +118,7 @@ class remote_backup_provider {
      * Return param type expected for web service.
      *
      * @return string
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public static function get_param_type() {
         $uniquetype = get_config('local_remote_backup_provider', 'uniqueid');
@@ -132,12 +139,12 @@ class remote_backup_provider {
      * Get uniqueidtype and value. Returns userfield as key and unique attribute of user as value.
      * The return array must have as key a fieldname of the user table, if unique attribute is used.
      *
-     * @return \stdClass
-     * @throws \dml_exception
+     * @return stdClass
+     * @throws dml_exception
      */
-    public static function get_uniqueid($userid=null) {
+    public static function get_uniqueid($userid = null) {
         global $USER;
-        $uniqueid = new \stdClass();
+        $uniqueid = new stdClass();
         $uniqueid->type = get_config('local_remote_backup_provider', 'uniqueid');
         switch ($uniqueid->type) {
             case 'username':
@@ -147,7 +154,7 @@ class remote_backup_provider {
                 $uniqueid->value = $USER->email;
                 break;
             case 'idnumber':
-                if(get_config('local_remote_backup_provider', 'enableidnumberpadding') == true) {
+                if (get_config('local_remote_backup_provider', 'enableidnumberpadding') == true) {
                     if ($userid == null) {
                         $uniqueid->value = str_pad($USER->idnumber, 9, "0", STR_PAD_LEFT);
                     } else {
@@ -181,14 +188,11 @@ class remote_backup_provider {
         $roles = get_user_roles($context, $userid, false);
         foreach ($roles as $role) {
             $currentrole = $role->shortname;
-            if($currentrole == "teacher" ||
-               $currentrole == "editingteacher") {
+            if ($currentrole == "teacher" ||
+                $currentrole == "editingteacher") {
                 return true;
             }
         }
         return false;
     }
 }
-
-
-

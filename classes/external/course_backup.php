@@ -28,19 +28,24 @@ namespace local_remote_backup_provider\external;
 use backup;
 use backup_controller;
 use context_course;
+use dml_exception;
+use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use file_exception;
+use invalid_parameter_exception;
 use local_remote_backup_provider\remote_backup_provider;
 use moodle_url;
+use stored_file_creation_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
-class course_backup extends \external_api {
+class course_backup extends external_api {
 
     /**
      * @return external_function_parameters
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public static function get_course_backup_by_id_parameters() {
         return new external_function_parameters([
@@ -58,10 +63,10 @@ class course_backup extends \external_api {
      * @param $id
      * @param $uniqueid
      * @return array|false
-     * @throws \dml_exception
-     * @throws \file_exception
-     * @throws \invalid_parameter_exception
-     * @throws \stored_file_creation_exception
+     * @throws dml_exception
+     * @throws file_exception
+     * @throws invalid_parameter_exception
+     * @throws stored_file_creation_exception
      */
     public static function get_course_backup_by_id($id, $uniqueid) {
         global $DB;

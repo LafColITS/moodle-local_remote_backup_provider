@@ -25,21 +25,26 @@
 
 namespace local_remote_backup_provider\external;
 
+use coding_exception;
+use dml_exception;
+use external_api;
+use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use local_remote_backup_provider\remote_backup_provider;
 
-class find_courses extends \external_api {
+class find_courses extends external_api {
 
     /**
-     * @return \external_function_parameters
-     * @throws \dml_exception
+     * @return external_function_parameters
+     * @throws dml_exception
      */
     public static function find_courses_parameters() {
-        return new \external_function_parameters([
-            'search' => new \external_value(PARAM_NOTAGS, 'search'),
-            'uniqueid' => new \external_value(remote_backup_provider::get_param_type(), 'uniqueid'),
+        return new external_function_parameters([
+            'search' => new external_value(PARAM_NOTAGS, 'search'),
+            'uniqueid' => new external_value(remote_backup_provider::get_param_type(), 'uniqueid'),
         ]);
     }
 
@@ -47,9 +52,9 @@ class find_courses extends \external_api {
      * @param $search
      * @param $uniquied
      * @return array|false
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \invalid_parameter_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
      */
     public static function find_courses($search, $uniqueid) {
         global $DB;

@@ -58,7 +58,6 @@ class viewpage implements renderable, templatable {
      */
     protected $data;
 
-
     /**
      * Contruct
      *

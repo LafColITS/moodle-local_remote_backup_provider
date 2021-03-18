@@ -41,8 +41,7 @@ require_once("{$CFG->dirroot}/backup/util/includes/restore_includes.php");
  *
  * @package local_remote_backup_provider
  */
-class extended_restore_controller
-{
+class extended_restore_controller {
 
     /**
      * @var remote_backup_provider
@@ -59,8 +58,7 @@ class extended_restore_controller
      * @param int $remote
      * @throws dml_exception
      */
-    public function __construct(remote_backup_provider $rbp, int $remote)
-    {
+    public function __construct(remote_backup_provider $rbp, int $remote) {
         $this->rbp = $rbp;
         $params['uniqueid'] = remote_backup_provider::get_uniqueid()->value;
         $params['id'] = $remote;
@@ -94,13 +92,12 @@ class extended_restore_controller
      * @param string $pathtoxml
      * @return false|int
      */
-    public static function delete_user_from_xml(array $userids, string $pathtoxml)
-    {
+    public static function delete_user_from_xml(array $userids, string $pathtoxml) {
 
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load($pathtoxml);
         foreach ($userids as $userid) {
-            $user = $dom->getElementById((string)$userid);
+            $user = $dom->getElementById((string) $userid);
             $users = $dom->getElementsByTagName('user');
 
             foreach ($users as $user) {
@@ -128,8 +125,7 @@ class extended_restore_controller
      * @return false|int
      */
     public static function update_user_from_xml(int $userid, string $pathtoxml, string $username = '', string $firstname = '',
-            $lastname = '', $useremail = '')
-    {
+        $lastname = '', $useremail = '') {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load($pathtoxml);
 
@@ -154,8 +150,7 @@ class extended_restore_controller
      * @throws file_exception
      * @throws moodle_exception
      */
-    public function import_backup_file()
-    {
+    public function import_backup_file() {
         // Import the backup file.
         $storedfile = $this->fs->create_file_from_url($this->filerecord,
             $this->remotecourse->url . '?token=' . $this->rbp->token, $this->options, true);
@@ -178,8 +173,7 @@ class extended_restore_controller
      * @throws moodle_exception
      * @throws restore_controller_exception
      */
-    public function perform_precheck()
-    {
+    public function perform_precheck() {
         global $USER;
 
         $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
@@ -221,8 +215,7 @@ class extended_restore_controller
      * @return array
      * @throws dml_exception
      */
-    private function return_list_of_users_to_import(string $restoreid)
-    {
+    private function return_list_of_users_to_import(string $restoreid) {
         global $DB;
 
         // To return any problem found.
@@ -234,7 +227,7 @@ class extended_restore_controller
         // Iterate over all the included users.
         $rs = $DB->get_recordset('backup_ids_temp', $conditions, '', 'itemid, info');
         foreach ($rs as $recuser) {
-            $user = (object)backup_controller_dbops::decode_backup_temp_info($recuser->info);
+            $user = (object) backup_controller_dbops::decode_backup_temp_info($recuser->info);
             $users[] = $user;
         }
         return $users;
@@ -250,8 +243,7 @@ class extended_restore_controller
      * @throws coding_exception
      * @throws dml_exception
      */
-    private function process_users(array $users, string $restoreid, moodle_url $restoreurl)
-    {
+    private function process_users(array $users, string $restoreid, moodle_url $restoreurl) {
         global $DB, $USER, $CFG;
         $context = context_system::instance();
         $userid = $USER->id;
@@ -311,8 +303,7 @@ class extended_restore_controller
         return $list;
     }
 
-    private function add_existing_users_to_newuser($newuser, $recs)
-    {
+    private function add_existing_users_to_newuser($newuser, $recs) {
         $newuser['matchingusers'] = array();
         if ($recs && count($recs) > 0) {
             // Run through the result of our DB Search, we might have more than one match.
@@ -337,11 +328,11 @@ class extended_restore_controller
 
     /**
      * function to return coursname, found in the course.xml file which ist part of the backup bundle
+     *
      * @param string $pathtoxml path to course.xml file in our extracted backup found in the temp directory
      * @return string cousename
      */
-    private function get_course_name_from_backup(string $pathtoxml): string
-    {
+    private function get_course_name_from_backup(string $pathtoxml): string {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->load($pathtoxml);
         $coursename = $dom->getElementsByTagName('fullname')->item(0)->nodeValue;
@@ -354,8 +345,7 @@ class extended_restore_controller
      * @param array $list
      * @return string
      */
-    public function display_userlist(array $list)
-    {
+    public function display_userlist(array $list) {
         global $PAGE;
         $output = $PAGE->get_renderer('local_remote_backup_provider');
         $out = '';

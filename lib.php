@@ -28,14 +28,14 @@ defined('MOODLE_INTERNAL') || die();
  * Extends core navigation to display the remote backup link in the course administration.
  *
  * @param navigation_node $navigation The navigation node to extend
- * @param stdClass        $course The course object
- * @param context         $context The course context
+ * @param stdClass $course The course object
+ * @param context $context The course context
  */
 function local_remote_backup_provider_extend_navigation_course($navigation, $course, $context) {
     if (has_capability('local/remote_backup_provider:access', $context)) {
         $url = new moodle_url('/local/remote_backup_provider/index.php', array('id' => $course->id));
         $navigation->add(get_string('import', 'local_remote_backup_provider'), $url,
-                navigation_node::TYPE_SETTING, null, null, new pix_icon('i/import', ''));
+            navigation_node::TYPE_SETTING, null, null, new pix_icon('i/import', ''));
     }
 }
 
@@ -51,7 +51,8 @@ function local_remote_backup_provider_extend_navigation_course($navigation, $cou
  * @param array $options additional options affecting the file serving
  * @return bool false if the file not found, just send the file otherwise and do not return anything
  */
-function local_remote_backup_provider_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function local_remote_backup_provider_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload,
+    array $options = array()) {
     // Check that the filearea is sane.
     if ($filearea !== 'backup') {
         return false;
@@ -71,7 +72,7 @@ function local_remote_backup_provider_pluginfile($course, $cm, $context, $filear
     if (!$args) {
         $filepath = '/';
     } else {
-        $filepath = '/'.implode('/', $args).'/';
+        $filepath = '/' . implode('/', $args) . '/';
     }
 
     // Retrieve the file.

@@ -25,22 +25,25 @@
 
 namespace local_remote_backup_provider\external;
 
+use coding_exception;
+use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use restore_controller;
 
 defined('MOODLE_INTERNAL') || die();
 
-class update_backup extends \external_api {
+class update_backup extends external_api {
 
     /**
      * Create new updated backup of the course
      *
      * @param $restoreid
      * @return array
-     * @throws \coding_exception
-     * @throws \invalid_parameter_exception
+     * @throws coding_exception
+     * @throws invalid_parameter_exception
      */
     public static function create_updated_backup($restoreid) {
         global $CFG;

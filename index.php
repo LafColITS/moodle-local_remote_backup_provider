@@ -24,12 +24,12 @@
 
 namespace local_remote_backup_provider;
 
+use core_renderer;
 use html_writer;
 use local_remote_backup_provider\forms\search_form;
+use moodle_page;
 use moodle_url;
 use stdClass;
-use moodle_page;
-use core_renderer;
 
 require_once(__DIR__ . '/../../config.php');
 

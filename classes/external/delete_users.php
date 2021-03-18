@@ -25,15 +25,17 @@
 
 namespace local_remote_backup_provider\external;
 
+use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use local_remote_backup_provider\extended_restore_controller;
 use restore_controller;
 
 defined('MOODLE_INTERNAL') || die();
 
-class delete_users extends \external_api {
+class delete_users extends external_api {
 
     /**
      * Delete record from our users.xml in our backup.
@@ -41,7 +43,7 @@ class delete_users extends \external_api {
      * @param int $id
      * @param string $restoreid
      * @return array
-     * @throws \invalid_parameter_exception
+     * @throws invalid_parameter_exception
      */
     public static function delete_user_entry_from_backup(int $id, string $restoreid): array {
         // Validate parameters passed from web service.
@@ -67,7 +69,7 @@ class delete_users extends \external_api {
      *
      * @return external_function_parameters
      */
-    public static function delete_user_entry_from_backup_parameters(): \external_function_parameters {
+    public static function delete_user_entry_from_backup_parameters(): external_function_parameters {
         return new external_function_parameters([
             'id' => new external_value(PARAM_INT, 'id'),
             'restoreid' => new external_value(PARAM_ALPHANUMEXT, 'restoreid')

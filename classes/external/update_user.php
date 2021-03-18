@@ -25,15 +25,17 @@
 
 namespace local_remote_backup_provider\external;
 
+use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use invalid_parameter_exception;
 use local_remote_backup_provider\extended_restore_controller;
 use restore_controller;
 
 defined('MOODLE_INTERNAL') || die();
 
-class update_user extends \external_api {
+class update_user extends external_api {
 
     /**
      * Update our users.xml in our backup
@@ -45,7 +47,7 @@ class update_user extends \external_api {
      * @param string $lastname
      * @param string $useremail
      * @return array
-     * @throws \invalid_parameter_exception
+     * @throws invalid_parameter_exception
      */
     public static function update_user_entry_in_backup(int $id, string $restoreid, string $username, string $firstname,
         string $lastname, string $useremail) {
