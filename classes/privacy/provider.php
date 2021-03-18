@@ -24,6 +24,8 @@
 
 namespace local_remote_backup_provider\privacy;
 
+use \core_privacy\local\metadata\null_provider;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,9 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2018 Lafayette College ITS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements
+class provider implements null_provider {
     // This plugin does not store any personal user data.
-    \core_privacy\local\metadata\null_provider {
+
 
     /**
      * Get the language string identifier with the component's language

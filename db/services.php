@@ -24,21 +24,81 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
-    'local_remote_backup_provider_find_courses' => array(
-         'classname' => 'local_remote_backup_provider_external',
-         'methodname' => 'find_courses',
-         'classpath' => 'local/remote_backup_provider/externallib.php',
-         'description' => 'Find courses matching a given string.',
-         'type' => 'read',
-         'capabilities' => 'moodle/course:viewhiddencourses',
-    ),
-    'local_remote_backup_provider_get_course_backup_by_id' => array(
-         'classname' => 'local_remote_backup_provider_external',
-         'methodname' => 'get_course_backup_by_id',
-         'classpath' => 'local/remote_backup_provider/externallib.php',
-         'description' => 'Generate a course backup file and return a link.',
-         'type' => 'read',
-         'capabilities' => 'moodle/backup:backupcourse',
-    ),
-);
+$functions = [
+        'local_remote_backup_provider_find_courses' => [
+                'classname' => \local_remote_backup_provider\external\find_courses::class,
+                'methodname' => 'find_courses',
+                'classpath' => 'local/remote_backup_provider/classes/external/find_courses.php',
+                'description' => 'Find courses matching a given string and uniqueid.',
+                'type' => 'read',
+                'services' => [
+                    'remote_backup_provider',
+                ],
+                'capabilities' => 'moodle/course:viewhiddencourses',
+        ],
+        'local_remote_backup_provider_get_course_backup_by_id' => [
+                'classname' => \local_remote_backup_provider\external\course_backup::class,
+                'methodname' => 'get_course_backup_by_id',
+                'classpath' => 'local/remote_backup_provider/classes/external/course_backup.php',
+                'description' => 'Generate a course backup file and return a link.',
+                'type' => 'read',
+                'services' => [
+                    'remote_backup_provider',
+                ],
+                'capabilities' => 'moodle/backup:backupcourse',
+        ],
+        'local_remote_backup_provider_delete_user_entry_from_backup' => [
+                'classname' => \local_remote_backup_provider\external\delete_users::class,
+                'methodname' => 'delete_user_entry_from_backup',
+                'classpath' => 'local/remote_backup_provider/classes/external/delete_users.php',
+                'description' => 'Delete a user by id from the users.xml in the backup we will import',
+                'type' => 'write',
+                'ajax' => true,
+                'services' => [
+                    'remote_backup_provider',
+                ],
+                'loginrequired' => true,
+        ],
+        'local_remote_backup_provider_update_user_entry_in_backup' => [
+                'classname' => \local_remote_backup_provider\external\update_user::class,
+                'methodname' => 'update_user_entry_in_backup',
+                'classpath' => 'local/remote_backup_provider/classes/external/update_user.php',
+                'description' => 'Update a user by id in the users.xml in the backup we will import',
+                'type' => 'write',
+                'ajax' => true,
+                'services' => [
+                    'remote_backup_provider',
+                ],
+                'loginrequired' => true,
+        ],
+        'local_remote_backup_provider_create_updated_backup' => [
+                'classname' => \local_remote_backup_provider\external\update_backup::class,
+                'methodname' => 'create_updated_backup',
+                'classpath' => 'local/remote_backup_provider/classes/external/update_backup.php',
+                'description' => 'Create a new backup file with the updated files',
+                'type' => 'write',
+                'ajax' => true,
+                'services' => [
+                    'remote_backup_provider',
+                ],
+                'loginrequired' => true,
+        ]
+];
+
+$services = [
+    'local_remote_backup_provider' => [
+        'functions' => [
+            'local_remote_backup_provider_find_courses',
+            'local_remote_backup_provider_get_course_backup_by_id',
+            'local_remote_backup_provider_delete_user_entry_from_backup',
+            'local_remote_backup_provider_update_user_entry_in_backup',
+            'local_remote_backup_provider_create_updated_backup',
+        ],
+        'requiredcapability' => 'local/remote_backup_provider:access',
+        'restrictedusers' => 0,
+        'enabled' => 1,
+        'shortname' => 'remote_backup_provider',
+        'downloadfiles' => 1,
+        'uploadfiles' => 1,
+    ]
+];
