@@ -28,11 +28,11 @@ $capabilities = array(
 
     'local/remote_backup_provider:access' => array(
         'riskbitmask' => RISK_CONFIG | RISK_SPAM | RISK_PERSONAL | RISK_XSS,
-
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
-            'manager' => CAP_ALLOW
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
         ),
     )
 );

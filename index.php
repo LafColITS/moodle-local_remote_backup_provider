@@ -55,9 +55,9 @@ require_capability('local/remote_backup_provider:access', $rbp->context);
 
 // Get the courses.
 if (!empty($search)) {
-    $params = array('search' => $search, 'uniqueid' => remote_backup_provider::get_uniqueid()->value);
+    $params = ['search' => $search, 'uniqueid' => remote_backup_provider::get_uniqueid()->value];
     $results = $rbp->get_remote_data('local_remote_backup_provider_find_courses', $params);
-    $data = array();
+    $data = [];
     if (is_array($results)) {
         foreach ($results as $result) {
             $data[] = html_writer::link(new moodle_url('/local/remote_backup_provider/index.php',

@@ -65,7 +65,7 @@ class find_courses extends external_api {
 
         // Get the userid based on unique user attribute.
         $uniqueattribute = remote_backup_provider::get_uniqueid($uniqueid);
-        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $uniqueattribute->value]);
+        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $params['uniqueid']]);
         if ($uniqueid == null || empty($uniqueid) || $userid == null || $userid == false) {
             return false;
         }

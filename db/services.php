@@ -95,7 +95,7 @@ $services = [
             'local_remote_backup_provider_create_updated_backup',
         ],
         'requiredcapability' => 'local/remote_backup_provider:access',
-        'restrictedusers' => 0,
+        'restrictedusers' => 1,
         'enabled' => 1,
         'shortname' => 'remote_backup_provider',
         'downloadfiles' => 1,

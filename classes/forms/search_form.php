@@ -29,7 +29,6 @@ use moodleform;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Search form for finding courses on the remote site.
@@ -46,10 +45,11 @@ class search_form extends moodleform {
         global $CFG;
 
         $mform = $this->_form;
+        $id = (empty($this->_customdata['id'])) ? 0 : $this->_customdata['id'];
         $mform->addElement('text', 'search', get_string('search'));
         $mform->setType('search', PARAM_NOTAGS);
         $mform->addRule('search', '', 'minlength', 4);
-        $mform->addElement('hidden', 'id', $this->_customdata['id']);
+        $mform->addElement('hidden', 'id', $id);
         $mform->setType('id', PARAM_INT);
         $this->add_action_buttons(false, get_string('search'));
     }
