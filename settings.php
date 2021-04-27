@@ -58,4 +58,10 @@ if ($hassiteconfig) {
         get_string('enabluserprecheck_desc', 'local_remote_backup_provider'), '0');
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
+
+    $adminsetting = new admin_setting_configcheckbox('enableuserdata',
+        get_string('enableuserdata', 'local_remote_backup_provider'),
+        get_string('enableuserdata_desc', 'local_remote_backup_provider'), '1');
+    $adminsetting->plugin = 'local_remote_backup_provider';
+    $settings->add($adminsetting);
 }
