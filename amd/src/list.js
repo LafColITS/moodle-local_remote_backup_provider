@@ -116,7 +116,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     }]);
 
                 } else {
-                    // Now we change everything in our users.xml file in our backupt
+                    // Now we change everything in our users.xml file in our backup
                     ajax.call([{
                         methodname: "local_remote_backup_provider_update_user_entry_in_backup",
                         args: {

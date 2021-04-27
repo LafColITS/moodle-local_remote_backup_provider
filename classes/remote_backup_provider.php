@@ -64,6 +64,13 @@ class remote_backup_provider {
     public $enableuserprecheck = false;
 
     /**
+     * Enable export of user data upon course restore process.
+     * Enabled by default
+     * @var bool
+     */
+    public $enableuserdata = true;
+
+    /**
      * @var \stdClass
      */
     public $course;
@@ -82,6 +89,7 @@ class remote_backup_provider {
         $this->remotesite = get_config('local_remote_backup_provider', 'remotesite');
         $this->uniqueid = get_config('local_remote_backup_provider', 'uniqueid');
         $this->enableuserprecheck = get_config('local_remote_backup_provider', 'enableuserprecheck');
+        $this->enableuserdata = get_config('local_remote_backup_provider', 'enableuserdata');
         $this->course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
         $this->context = context_course::instance($id);
         $returnurl = new moodle_url('/course/view.php', array('id' => $id));
