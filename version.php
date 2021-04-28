@@ -28,4 +28,4 @@ $plugin->component = 'local_remote_backup_provider';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = 'v3.4.4';
 $plugin->requires  = 2018051700;
-$plugin->version   = 2021042800;
+$plugin->version   = 2021042801;

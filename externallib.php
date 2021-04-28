@@ -156,10 +156,11 @@ class local_remote_backup_provider_external extends external_api {
                 'activities' => 1,          // Include activities (default = 1)
                 'blocks' => 1,              // Include blocks (default = 1)
                 'filters' => 1,             // Include filters (default = 1)
-                'comments' => 0,            // Include comments (default = 1)
+                //'comments' => 0,          // Include comments (default = 1)
                 'userscompletion' => 0,     // Include user completion details (default = 1)
                 'logs' => 0,                // Include course logs (default = 0)
-                'grade_histories' => 0      // Include grade history (default = 0)
+                'grade_histories' => 0,     // Include grade history (default = 0)
+                'groups' => 0               // do not include groups and groupings
             );
 
             foreach ($bc->get_plan()->get_tasks() as $taskindex => $task) {
