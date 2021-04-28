@@ -65,13 +65,6 @@ if (!empty($search)) {
     // Instantiate the restore controller, which handles the restore of the remote course.
     $restorecontroller = new extended_restore_controller($rbp, $remote);
 
-    //TODO Bernhard:
-    /*if ($rbp->enableuserdata == false) {
-        // Direct import without prechecks and with no user data
-        $restorecontroller->import_backup_file();
-        //TODO: how can you make sure that no user data will be imported?
-    }
-    else */
     if ($rbp->enableuserprecheck == false) {
         // Direct import without prechecks.
         $restorecontroller->import_backup_file();

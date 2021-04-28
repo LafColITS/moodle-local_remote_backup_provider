@@ -129,6 +129,9 @@ class local_remote_backup_provider_external extends external_api {
     public static function get_course_backup_by_id($id, $uniqueid) {
         global $DB;
 
+        // Check if setting to import user data is enabled / disabled
+        $is_userdata_enabled = (bool)get_config('local_remote_backup_provider', 'enableuserdata');
+
         // Validate parameters passed from web service.
         $params = self::validate_parameters(
                 self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
@@ -141,6 +144,40 @@ class local_remote_backup_provider_external extends external_api {
         // Instantiate controller.
         $bc = new backup_controller(backup::TYPE_1COURSE, $id, backup::FORMAT_MOODLE,
                 backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userid);
+
+        // If setting userdataenabled is not checked
+        // ...then create a backup without user data
+        if ($is_userdata_enabled == false){
+            // The array of initial backup settings.
+            $backupsettings = array (
+                'users' => 0,               // do not include enrolled users!
+                'anonymize' => 0,           // Anonymize user information (default = 0)
+                'role_assignments' => 0,    // Include user role assignments (default = 1)
+                'activities' => 1,          // Include activities (default = 1)
+                'blocks' => 1,              // Include blocks (default = 1)
+                'filters' => 1,             // Include filters (default = 1)
+                'comments' => 0,            // Include comments (default = 1)
+                'userscompletion' => 0,     // Include user completion details (default = 1)
+                'logs' => 0,                // Include course logs (default = 0)
+                'grade_histories' => 0      // Include grade history (default = 0)
+            );
+
+            foreach ($bc->get_plan()->get_tasks() as $taskindex => $task) {
+                $settings = $task->get_settings();
+                foreach ($settings as $settingindex => $setting) {
+                    $setting->set_status(backup_setting::NOT_LOCKED);
+
+                    // Modify the values of the intial backup settings
+                    if ($taskindex == 0) {
+                        foreach ($backupsettings as $key => $value) {
+                            if ($setting->get_name() == $key) {
+                                $setting->set_value($value); // do not include enrolled users!
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // Run the backup.
         $bc->set_status(backup::STATUS_AWAITING);
