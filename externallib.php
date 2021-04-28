@@ -150,17 +150,17 @@ class local_remote_backup_provider_external extends external_api {
         if ($is_userdata_enabled == false){
             // The array of initial backup settings.
             $backupsettings = array (
-                'users' => 0,               // do not include enrolled users!
-                'anonymize' => 0,           // Anonymize user information (default = 0)
-                'role_assignments' => 0,    // Include user role assignments (default = 1)
-                'activities' => 1,          // Include activities (default = 1)
-                'blocks' => 1,              // Include blocks (default = 1)
-                'filters' => 1,             // Include filters (default = 1)
-                //'comments' => 0,          // Include comments (default = 1)
-                'userscompletion' => 0,     // Include user completion details (default = 1)
-                'logs' => 0,                // Include course logs (default = 0)
-                'grade_histories' => 0,     // Include grade history (default = 0)
-                'groups' => 0               // do not include groups and groupings
+                'users' => 0,               // enrolled users => this is where we turn them off!
+                'anonymize' => 0,           // user information
+                'role_assignments' => 0,    // user role assignments
+                'activities' => 1,          // activities
+                'blocks' => 1,              // blocks
+                'filters' => 1,             // filters
+                'comments' => 0,            // comments
+                'userscompletion' => 0,     // user completion details
+                'logs' => 0,                // course logs
+                'grade_histories' => 0,     // grade history
+                'groups' => 0               // groups and groupings
             );
 
             foreach ($bc->get_plan()->get_tasks() as $taskindex => $task) {
