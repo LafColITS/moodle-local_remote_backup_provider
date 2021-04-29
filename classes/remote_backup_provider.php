@@ -53,6 +53,18 @@ class remote_backup_provider {
     public $uniqueid = '';
 
     /**
+     * The username of a specific user defined on the remote site
+     * which will be used for course exports:
+     * If a valid username is entered, the search will be done with the user chosen in the setting.
+     * Also, the user has to have the rights to create a backup for the courses.
+     * So no matter which user on the local instance wants to import a course, it will be determined by the user
+     * specified on the remote site, which course can be backed up. (This depends on the permissions of the user).
+     *
+     * @var string
+     */
+    public $specific_export_username = '';
+
+    /**
      * @var context_course
      */
     public $context;
@@ -88,6 +100,7 @@ class remote_backup_provider {
         $this->token = get_config('local_remote_backup_provider', 'wstoken');
         $this->remotesite = get_config('local_remote_backup_provider', 'remotesite');
         $this->uniqueid = get_config('local_remote_backup_provider', 'uniqueid');
+        $this->specific_export_username = get_config('local_remote_backup_provider', 'specific_export_username');
         $this->enableuserprecheck = (bool)get_config('local_remote_backup_provider', 'enableuserprecheck');
         $this->enableuserdata = (bool)get_config('local_remote_backup_provider', 'enableuserdata');
         $this->course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
@@ -135,12 +148,31 @@ class remote_backup_provider {
      * Get uniqueidtype and value. Returns userfield as key and unique attribute of user as value.
      * The return array must have as key a fieldname of the user table, if unique attribute is used.
      *
+     * If a specific user for course exports has been defined on the remote site,
+     * this username will be used as uniqueid.
+     *
      * @return \stdClass
      * @throws \dml_exception
      */
     public static function get_uniqueid() {
         global $USER;
+
         $uniqueid = new \stdClass();
+
+        // at first, have a look if a specific user for course exports has been defined
+        $specific_export_username = get_config('local_remote_backup_provider', 'specific_export_username');
+        if (!empty($specific_export_username)){
+            global $DB;
+            $specific_export_user = $DB->get_record('user', array('username' => $specific_export_username ));
+            if (!empty($specific_export_user)){
+                $uniqueid->value = $specific_export_user->username;
+                $uniqueid->type = 'username';
+
+                return $uniqueid;
+            }
+        }
+
+        // if no specific export user could be found, we continue...
         $uniqueid->type = get_config('local_remote_backup_provider', 'uniqueid');
         switch ($uniqueid->type) {
             case 'username':

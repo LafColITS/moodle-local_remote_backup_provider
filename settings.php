@@ -53,6 +53,12 @@ if ($hassiteconfig) {
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
 
+    $adminsetting = new admin_setting_configtext('specific_export_username',
+        get_string('specific_export_username', 'local_remote_backup_provider'),
+        get_string('specific_export_username_desc', 'local_remote_backup_provider'), '');
+    $adminsetting->plugin = 'local_remote_backup_provider';
+    $settings->add($adminsetting);
+
     $adminsetting = new admin_setting_configcheckbox('enableuserprecheck',
         get_string('enableuserprecheck', 'local_remote_backup_provider'),
         get_string('enabluserprecheck_desc', 'local_remote_backup_provider'), '0');

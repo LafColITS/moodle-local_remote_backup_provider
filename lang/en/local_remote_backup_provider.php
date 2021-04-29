@@ -32,18 +32,30 @@ $string['remotesite_desc'] = 'The fully-qualified domain of the remote site';
 $string['wstoken'] = 'Web service token';
 $string['wstoken_desc'] = 'Add the web service token from the remote site';
 $string['enableuserprecheck'] = 'Enable a user check before proceeding to the course restore';
-$string['enabluserprecheck_desc'] = 'ATTENTION: You need to configure this setting at the CLIENT site. '
-    .'Please uncheck, if you have configured the remote site to create backups without user data.<br/><br/>'
-    .'Checking this option will display a downloadable user list of the users included in the backup. '
-    .'There will be shown which users are going to be enrolled in the restored course and which users '
-    .'in the backup match the local users.';
+$string['enabluserprecheck_desc'] = 'ATTENTION: You need to configure this setting at the CLIENT site. 
+                                    Please uncheck, if you have configured the remote site to create backups without user data.<br/><br/>
+                                    Checking this option will display a downloadable user list of the users included in the backup. 
+                                    There will be shown which users are going to be enrolled in the restored course and which users 
+                                    in the backup match the local users.';
 $string['userprecheck_fail_desc'] = '<p style="color: red;">Prechecks failed. This is most likely because the remote site has been configured to export
                  course backup data without user data. Please turn off the setting "enableuserprecheck" at your client site.
                  (Local Plugin: Remote Backup Provider > Settings)</p>';
 $string['enableuserdata'] = 'Backup all courses with user data';
 $string['enableuserdata_desc'] = 'ATTENTION: You need to configure this setting at the REMOTE site. If you uncheck this option, ALL courses will be backed up WITHOUT user data.';
 $string['uniqueid'] = 'Matching user attribute';
-$string['uniqueid_desc'] = 'Use same value on remote and local site! On the remote Moodle instance only courses are shown, that the user with the matching user attribute is allowed to see. In order to identify the user on the remote instance, you can use either username or email address or the user field idnumber. Make sure, that idnumber is unique.';
+$string['uniqueid_desc'] = 'Use same value on remote and local site! On the remote Moodle instance only courses are shown, 
+                            that the user with the matching user attribute is allowed to see. In order to identify the 
+                            user on the remote instance, you can use either username or email address or the user field 
+                            idnumber. Make sure, that idnumber is unique.<br/><br/>
+                            BE CAREFUL: If you want "Matching user attribute" to have an effect, do NOT define  a 
+                            specific user for course exports.';
+$string['specific_export_username'] = 'Specific user for course exports';
+$string['specific_export_username_desc'] = 'ATTENTION: You need to configure this setting at the REMOTE site. If you enter a
+                                    valid username, the search will be done with the user chosen in the setting. Also, 
+                                    the user has to have the rights to create a backup for the courses. <br/>
+                                    So no matter which user on the local instance wants to import a course, it will be
+                                    determined by the user specified on the remote site, which course can be backed up. 
+                                    (This depends on the permissions of the user).';
 $string['nouserstoimport'] = 'No Users to import';
 $string['username'] = 'Username';
 $string['firstname'] = 'First name';
