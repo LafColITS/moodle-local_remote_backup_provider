@@ -67,6 +67,7 @@ class extended_restore_controller {
         // Generate the backup file on remote Moodle and store the link to the file in object.
         $this->remotecourse = $rbp->get_remote_data('local_remote_backup_provider_get_course_backup_by_id', $params);
         $this->fs = get_file_storage();
+        $this->storedfile = null; // member variable to access stored fail, in case of precheck fail
         $timestamp = time();
         $this->filerecord = array(
                 'contextid' => $this->rbp->context->id,
@@ -147,8 +148,15 @@ class extended_restore_controller {
      */
     public function import_backup_file() {
         // Import the backup file.
-        $storedfile = $this->fs->create_file_from_url($this->filerecord,
+        try {
+            $storedfile = $this->fs->create_file_from_url($this->filerecord,
                 $this->remotecourse->url . '?token=' . $this->rbp->token, null, true);
+        } catch (\Exception $ex) {
+            // Bugfix: importing when precheck has already run, but failed
+            // ... get the file which has already been created by perform_precheck() function
+            $storedfile = $this->storedfile;
+        }
+
         $restoreurl = new moodle_url('/backup/restore.php',
                 array(
                         'contextid' => $this->rbp->context->id,
@@ -169,38 +177,45 @@ class extended_restore_controller {
      * @throws restore_controller_exception
      */
     public function perform_precheck() {
-        global $USER, $PAGE;
+        try {
+            global $USER, $PAGE;
 
-        $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
-        $filepath = make_backup_temp_directory($tmpid);
-        if (!check_dir_exists($filepath, true, true)) {
-            throw new restore_controller_exception('cannot_create_backup_temp_dir');
+            $tmpid = restore_controller::get_tempdir_name($this->rbp->id, $USER->id);
+            $filepath = make_backup_temp_directory($tmpid);
+            if (!check_dir_exists($filepath, true, true)) {
+                throw new restore_controller_exception('cannot_create_backup_temp_dir');
+            }
+
+            $storedfile = $this->fs->create_file_from_url($this->filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token,
+                    null, true);
+            $this->storedfile = $storedfile; // Bufix: save stored file into member variable to access it later (in case precheck fails)
+            if ($storedfile->get_filesize() <= 0) {
+                throw new coding_exception('The backup file does not exist. It was either not transferred or access is not possible');
+            }
+
+            $restoreurl = new moodle_url('/backup/restore.php',
+                    array(
+                            'contextid' => $this->rbp->context->id
+                    )
+            );
+
+            $fp = get_file_packer('application/vnd.moodle.backup');
+            $fp->extract_to_pathname($storedfile, $filepath);
+            // Access user.xml in backup?
+            $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
+                    backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+            self::execute_prechecks($rc);
+            $file = $rc->get_plan()->get_basepath() . '/users.xml';
+
+            restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
+            $users = $this->return_list_of_users_to_import($rc->get_restoreid());
+            $list = $this->process_users($users, $rc->get_restoreid(), $restoreurl);
+            $list['coursename'] = $this->get_course_name_from_backup($rc->get_plan()->get_basepath() . '/course/course.xml');
+        } catch (\Exception $ex) {
+            // prechecks failed
+            echo get_string('userprecheck_fail_desc', 'local_remote_backup_provider');
+            $list = false;
         }
-
-        $storedfile = $this->fs->create_file_from_url($this->filerecord, $this->remotecourse->url . '?token=' . $this->rbp->token,
-                null, true);
-        if ($storedfile->get_filesize() <= 0) {
-            throw new coding_exception('The backup file does not exist. It was either not transferred or access is not possible');
-        }
-
-        $restoreurl = new moodle_url('/backup/restore.php',
-                array(
-                        'contextid' => $this->rbp->context->id
-                )
-        );
-
-        $fp = get_file_packer('application/vnd.moodle.backup');
-        $fp->extract_to_pathname($storedfile, $filepath);
-        // Access user.xml in backup?
-        $rc = new restore_controller($tmpid, $this->rbp->id, backup::INTERACTIVE_NO,
-                backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
-        self::execute_prechecks($rc);
-        $file = $rc->get_plan()->get_basepath() . '/users.xml';
-
-        restore_dbops::load_users_to_tempids($rc->get_restoreid(), $file);
-        $users = $this->return_list_of_users_to_import($rc->get_restoreid());
-        $list = $this->process_users($users, $rc->get_restoreid(), $restoreurl);
-        $list['coursename'] = $this->get_course_name_from_backup($rc->get_plan()->get_basepath() . '/course/course.xml');
 
         return $list;
     }

@@ -72,6 +72,12 @@ if (!empty($search)) {
     else {
         // Perform extended user checks and reporting.
         $listofusers = $restorecontroller->perform_precheck();
+
+        // Skip user checks and proceed to direct import
+        // ...in case of a fail (most likely because of a misconfiguration of the remote/client plugin)
+        if ($listofusers === false){
+            $restorecontroller->import_backup_file();
+        }
     }
 }
 
