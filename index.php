@@ -61,6 +61,8 @@ if (!empty($search)) {
                 '[' . $result->shortname . '] ' . $result->fullname
         );
     }
+    if (empty($results)) $data[] = get_string('error_no_courses_found','local_remote_backup_provider');
+
 } else if ($remote !== 0) {
     // Instantiate the restore controller, which handles the restore of the remote course.
     $restorecontroller = new extended_restore_controller($rbp, $remote);
