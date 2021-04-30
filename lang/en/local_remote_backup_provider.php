@@ -74,3 +74,6 @@ $string['samefirstandlastname'] = 'Same first and lastname';
 $string['createasnew'] = 'Create user as new user.';
 $string['mergewith'] = 'Merge with:';
 $string['exportascsv'] = 'Export as CSV... :';
+
+# error messages
+$string['error_no_courses_found'] = '<p>We are sorry, no courses could be found...</p>';

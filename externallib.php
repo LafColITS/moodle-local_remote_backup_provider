@@ -89,6 +89,7 @@ class local_remote_backup_provider_external extends external_api {
             }
             $courses[$course->id] = $course;
         }
+        if (empty($courses)) echo get_string('error_no_courses_found','local_remote_backup_provider');
 
         return $courses;
     }
