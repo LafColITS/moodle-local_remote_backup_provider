@@ -70,18 +70,26 @@ class local_remote_backup_provider_external extends external_api {
         $fields = 'c.id,c.idnumber,c.shortname,c.fullname,c.visible';
         $sql = "SELECT $fields FROM {course} c WHERE $searchsql ORDER BY c.shortname ASC";
         $courserecords = $DB->get_recordset_sql($sql, $searchparams, 0, 500);
+
+        // Get the uniqueid of the user defined to backup courses
+        // this can be either a specific export user or -
+        // if no specific user was defined - the matching remote user
+        $uniqueattribute = remote_backup_provider::get_uniqueid();
+        $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $uniqueattribute->value]);
+
         // Only return courses user is allowed to backup.
         foreach ($courserecords as $course) {
             context_helper::preload_from_record($course);
             $coursecontext = context_course::instance($course->id);
-            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext, $userid)) {
                 continue;
             }
-            if (!has_capability('moodle/backup:backupcourse', $coursecontext)) {
+            if (!has_capability('moodle/backup:backupcourse', $coursecontext, $userid)) {
                 continue;
             }
             $courses[$course->id] = $course;
         }
+
         return $courses;
     }
 
