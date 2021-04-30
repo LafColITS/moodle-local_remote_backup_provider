@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_remote_backup_provider\remote_backup_provider;
+
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
@@ -53,9 +55,24 @@ if ($hassiteconfig) {
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
 
+    // when loading, check if we have a valid username and prepare the description string
+    $specific_export_username = get_config('local_remote_backup_provider', 'specific_export_username');
+    if (empty($specific_export_username)) {
+        $specific_export_username_desc = get_string('specific_export_username_desc', 'local_remote_backup_provider');
+    }
+    else if (remote_backup_provider::is_valid_specific_export_user()){
+        $specific_export_username_desc = '<p style="color:green;"><b>'.$specific_export_username.'</b>' .
+        get_string('specific_export_username_valid_desc', 'local_remote_backup_provider').'</p><p>'.
+        get_string('specific_export_username_desc', 'local_remote_backup_provider').'</p>';
+    } else {
+        $specific_export_username_desc = '<p style="color:red;"><b>'.$specific_export_username.'</b>' .
+            get_string('specific_export_username_invalid_desc', 'local_remote_backup_provider').'</p><p>'.
+            get_string('specific_export_username_desc', 'local_remote_backup_provider').'</p>';
+    }
+
     $adminsetting = new admin_setting_configtext('specific_export_username',
         get_string('specific_export_username', 'local_remote_backup_provider'),
-        get_string('specific_export_username_desc', 'local_remote_backup_provider'), '');
+        $specific_export_username_desc, '');
     $adminsetting->plugin = 'local_remote_backup_provider';
     $settings->add($adminsetting);
 

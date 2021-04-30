@@ -201,7 +201,7 @@ class remote_backup_provider {
      * Gets a user object from the DB for a specific export user
      * which has been defined in the plugin config settings (settings.php)
      *
-     * @return stdClass $uniqueid an object containing value und type of the uniqueid, returns false if no user can be found
+     * @return stdClass an object containing value und type of the uniqueid, returns false if no user can be found
      */
     public static function get_specific_export_user() {
         // at first, we have a look if a specific user for course exports has been defined
@@ -212,6 +212,29 @@ class remote_backup_provider {
             $specific_export_user = $DB->get_record('user', array('username' => $specific_export_username ));
             if (!empty($specific_export_user)){
                 return $specific_export_user;
+            }
+        }
+        // if no specific export user can be found, we return false
+        return false;
+    }
+
+    /**
+     * Helper function to find out if the specific export user
+     * defined in the plugin config settings (settings.php)
+     * is valid
+     *
+     * @return bool returns true only if the defined specific export user is valid
+     */
+    public static function is_valid_specific_export_user() {
+        // at first, we have a look if a specific user for course exports has been defined
+        $specific_export_username = get_config('local_remote_backup_provider', 'specific_export_username');
+        if (!empty($specific_export_username)){
+            global $DB;
+            // now we look up the user in the DB:
+            $specific_export_user = $DB->get_record('user', array('username' => $specific_export_username ));
+            if (!empty($specific_export_user)){
+                // user could be found, so we have a valid export user
+                return true;
             }
         }
         // if no specific export user can be found, we return false

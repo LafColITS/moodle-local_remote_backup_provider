@@ -56,6 +56,8 @@ $string['specific_export_username_desc'] = 'ATTENTION: You need to configure thi
                                     So no matter which user on the local instance wants to import a course, it will be
                                     determined by the user specified on the remote site, which course can be backed up. 
                                     (This depends on the permissions of the user).';
+$string['specific_export_username_valid_desc'] = ' is a valid username.';
+$string['specific_export_username_invalid_desc'] = ' is not a valid username.';
 $string['nouserstoimport'] = 'No Users to import';
 $string['username'] = 'Username';
 $string['firstname'] = 'First name';
