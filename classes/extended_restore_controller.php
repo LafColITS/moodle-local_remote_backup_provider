@@ -157,14 +157,19 @@ class extended_restore_controller {
             $storedfile = $this->storedfile;
         }
 
-        $restoreurl = new moodle_url('/backup/restore.php',
+        try {
+            $restoreurl = new moodle_url('/backup/restore.php',
                 array(
-                        'contextid' => $this->rbp->context->id,
-                        'pathnamehash' => $storedfile->get_pathnamehash(),
-                        'contenthash' => $storedfile->get_contenthash()
+                    'contextid' => $this->rbp->context->id,
+                    'pathnamehash' => $storedfile->get_pathnamehash(),
+                    'contenthash' => $storedfile->get_contenthash()
                 )
-        );
-        redirect($restoreurl);
+            );
+            redirect($restoreurl);
+        } catch (\Exception $ex) {
+            // prechecks failed
+            echo get_string('userprecheck_fail_desc', 'local_remote_backup_provider');
+        }
     }
 
     /**
