@@ -144,6 +144,8 @@ class local_remote_backup_provider_external extends external_api {
                 self::get_course_backup_by_id_parameters(), array('id' => $id, 'uniqueid' => $uniqueid)
         );
 
+        throw new Exception('id: '.$id.' - uniqueid: '.$uniqueid);
+
         // Get the userid based on unique user attribute.
         $uniqueattribute = remote_backup_provider::get_uniqueid();
         $userid = $DB->get_field('user', 'id', [$uniqueattribute->type => $params['uniqueid']]);
