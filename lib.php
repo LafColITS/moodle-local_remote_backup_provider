@@ -44,7 +44,7 @@ function local_remote_backup_provider_extend_navigation_course($navigation, $cou
  *
  * @param stdClass $course the course object
  * @param stdClass $cm the course module object
- * @param stdClass $context the context
+ * @param context $context the context
  * @param string $filearea the name of the file area
  * @param array $args extra arguments (itemid, path)
  * @param bool $forcedownload whether or not force download

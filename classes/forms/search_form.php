@@ -21,10 +21,14 @@
  * @copyright  2015 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_remote_backup_provider\forms;
+use moodleform;
+
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/formslib.php");
+require_once($CFG->libdir.'/formslib.php');
+
 
 /**
  * Search form for finding courses on the remote site.
@@ -33,13 +37,11 @@ require_once("$CFG->libdir/formslib.php");
  * @copyright 2015 Lafayette College ITS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_remote_backup_provider_search_form extends moodleform {
+class search_form extends moodleform {
     /**
      * Defines the search form.
      */
     public function definition() {
-        global $CFG;
-
         $mform = $this->_form;
         $mform->addElement('text', 'search', get_string('search'));
         $mform->setType('search', PARAM_NOTAGS);

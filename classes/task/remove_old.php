@@ -23,6 +23,7 @@
  */
 
 namespace local_remote_backup_provider\task;
+use core\task\scheduled_task;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Lafayette College ITS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class remove_old extends \core\task\scheduled_task {
+class remove_old extends scheduled_task {
     /**
      * Get the name of the task.
      *

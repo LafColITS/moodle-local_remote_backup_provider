@@ -42,7 +42,7 @@ At this point follow the course restore process. The backup is created according
 
 Requirements
 ------------
-- Moodle 3.6 (build 2018120300 or later)
+- Moodle 3.5 (build 2018051700 or later)
 
 Installation
 ------------

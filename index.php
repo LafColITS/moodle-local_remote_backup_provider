@@ -22,97 +22,91 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/../../config.php');
-require_once('search_form.php');
+namespace local_remote_backup_provider;
 
-$id     = required_param('id', PARAM_INT);
+use html_writer;
+use local_remote_backup_provider\forms\search_form;
+use moodle_url;
+use stdClass;
+
+require_once(__DIR__ . '/../../config.php');
+
+$id = required_param('id', PARAM_INT);
+// Remote course id.
 $remote = optional_param('remote', 0, PARAM_INT);
 $search = optional_param('search', '', PARAM_NOTAGS);
-$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
-require_login($course);
+$listofusers = null;
+
+// Create new instance of local_remote_backup_provider.
+$rbp = new remote_backup_provider($id);
+
+require_login($rbp->course);
 $PAGE->set_url('/local/remote_backup_provider/index.php', array('id' => $id));
 $PAGE->set_pagelayout('report');
-$returnurl = new moodle_url('/course/view.php', array('id' => $id));
 
 // Check permissions.
-$context = context_course::instance($course->id);
-require_capability('local/remote_backup_provider:access', $context);
-
-// Get config settings.
-$token      = get_config('local_remote_backup_provider', 'wstoken');
-$remotesite = get_config('local_remote_backup_provider', 'remotesite');
-if (empty($token) || empty($remotesite)) {
-    print_error('pluginnotconfigured', 'local_remote_backup_provider', $returnurl);
-}
+require_capability('local/remote_backup_provider:access', $rbp->context);
 
 // Get the courses.
 if (!empty($search)) {
-    $url = $remotesite . '/webservice/rest/server.php?wstoken=' . $token .
-        '&wsfunction=local_remote_backup_provider_find_courses&moodlewsrestformat=json';
     $params = array('search' => $search);
-    $curl = new curl;
-    $results = json_decode($curl->post($url, $params));
+    $results = $rbp->get_remote_data('local_remote_backup_provider_find_courses', $params);
     $data = array();
     foreach ($results as $result) {
         $data[] = html_writer::link(
-            new moodle_url('/local/remote_backup_provider/index.php',
-                array('id' => $id, 'remote' => $result->id)
-            ),
-            '[' . $result->shortname . '] ' . $result->fullname
+                new moodle_url('/local/remote_backup_provider/index.php',
+                        array('id' => $id, 'remote' => $result->id)
+                ),
+                '[' . $result->shortname . '] ' . $result->fullname
         );
     }
-} else if ($remote !== 0) {
-    // Generate the backup file.
-    $fs = get_file_storage();
-    $url = $remotesite . '/webservice/rest/server.php?wstoken=' . $token .
-        '&wsfunction=local_remote_backup_provider_get_course_backup_by_id&moodlewsrestformat=json';
-    $params = array('id' => $remote, 'username' => $USER->username);
-    $curl = new curl;
-    $resp = json_decode($curl->post($url, $params));
+    if (empty($results)) $data[] = get_string('error_no_courses_found','local_remote_backup_provider');
 
-    // Import the backup file.
-    $timestamp = time();
-    $filerecord = array(
-        'contextid' => $context->id,
-        'component' => 'local_remote_backup_provider',
-        'filearea'  => 'backup',
-        'itemid'    => $timestamp,
-        'filepath'  => '/',
-        'filename'  => 'foo',
-        'timecreated' => $timestamp,
-        'timemodified' => $timestamp
-    );
-    $storedfile = $fs->create_file_from_url($filerecord, $resp->url . '?token=' . $token, null, true);
-    $restoreurl = new moodle_url(
-        '/backup/restore.php',
-        array(
-            'contextid'    => $context->id,
-            'pathnamehash' => $storedfile->get_pathnamehash(),
-            'contenthash'  => $storedfile->get_contenthash()
-        )
-    );
-    redirect($restoreurl);
+} else if ($remote !== 0) {
+    // Instantiate the restore controller, which handles the restore of the remote course.
+    $restorecontroller = new extended_restore_controller($rbp, $remote);
+
+    if ($rbp->enableuserprecheck == false) {
+        // Direct import without prechecks.
+        $restorecontroller->import_backup_file();
+    }
+    else {
+        // Perform extended user checks and reporting.
+        $listofusers = $restorecontroller->perform_precheck();
+
+        // Skip user checks and proceed to direct import
+        // ...in case of a fail (most likely because of a misconfiguration of the remote/client plugin)
+        if ($listofusers === false){
+            $restorecontroller->import_backup_file();
+        }
+    }
 }
 
-$PAGE->set_title($course->shortname . ': ' . get_string('import', 'local_remote_backup_provider'));
-$PAGE->set_heading($course->fullname);
+$PAGE->set_title($rbp->course->shortname . ': ' . get_string('import', 'local_remote_backup_provider'));
+$PAGE->set_heading($rbp->course->fullname);
 
 echo $OUTPUT->header();
 
-// Display the courses.
-if (!empty($data)) {
-    echo html_writer::tag('h2', 'Available source courses');
-    echo html_writer::tag('i', 'Source: ' . $remotesite);
-    echo html_writer::alist($data);
+// Show the list of users to import.
+if ($listofusers) {
+    echo $restorecontroller->display_userlist($listofusers);
+} else {
+    // Display the courses.
+    if (!empty($data)) {
+        echo html_writer::tag('h2', 'Available source courses');
+        echo html_writer::tag('i', 'Source: ' . $rbp->remotesite);
+        echo html_writer::alist($data);
+    }
+
+    // Show the search form.
+    $mform = new search_form(null, ['id' => $id]);
+    if (!$mform->is_cancelled()) {
+        $toform = new stdClass();
+        $toform->id = $id;
+        $mform->set_data($toform);
+        $mform->display();
+    }
 }
 
-// Show the search form.
-$mform = new local_remote_backup_provider_search_form();
-if (!$mform->is_cancelled()) {
-    $toform = new stdClass();
-    $toform->id = $id;
-    $mform->set_data($toform);
-    $mform->display();
-}
 echo $OUTPUT->footer();
